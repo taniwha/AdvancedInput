@@ -12,6 +12,8 @@ MOD_FILES := \
 	Assembly/VersionReport.cs	\
 	Linux/InputLib.cs			\
 	AdvancedInput.cs			\
+	Data.cs						\
+	DeviceNamesContainer.cs		\
 	$e
 
 DOC_FILES := \

@@ -93,6 +93,7 @@ namespace AdvancedInput {
 		}
 
 		Device dev;
+		DeviceNamesContainer devNames;
 		int devidx;
 		
 		void Start ()
@@ -107,7 +108,11 @@ namespace AdvancedInput {
 
 			for (int i = 0; i < dev.num_axes; i++) {
 				GUILayout.BeginHorizontal ();
-				GUILayout.Label (i.ToString());
+				if (devNames != null) {
+					GUILayout.Label (devNames.AxisName (i));
+				} else {
+					GUILayout.Label (i.ToString());
+				}
 				GUILayout.FlexibleSpace ();
 				GUILayout.Label (dev.axes[i].value.ToString());
 				GUILayout.EndHorizontal ();
@@ -126,7 +131,11 @@ namespace AdvancedInput {
 					GUILayout.BeginVertical ();
 				}
 				GUILayout.BeginHorizontal ();
-				GUILayout.Label (i.ToString());
+				if (devNames != null) {
+					GUILayout.Label (devNames.ButtonName (i));
+				} else {
+					GUILayout.Label (i.ToString());
+				}
 				GUILayout.FlexibleSpace ();
 				GUILayout.Label (dev.buttons[i].state.ToString());
 				GUILayout.EndHorizontal ();
@@ -138,6 +147,7 @@ namespace AdvancedInput {
 		void WindowGUI (int windowID)
 		{
 			dev = Device.devices[devidx];
+			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
 			Device.CheckInput ();
 			if (GUILayout.Button (dev.name)) {
 				if (++devidx >= Device.devices.Count) {
