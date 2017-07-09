@@ -5,9 +5,10 @@ GAMEDATA	:= ${KSPDIR}/GameData
 MSCGAMEDATA := ${GAMEDATA}/${MODNAME}
 PLUGINDIR	:= ${MSCGAMEDATA}/Plugins
 
-CFLAGS = -Wall -Werror -fPIC
+CFLAGS = -g -Wall -Werror -fPIC
 CPPFLAGS = -MMD
-MCSFLAGS = -optimize -warnaserror -unsafe
+#MCSFLAGS = -optimize -warnaserror -unsafe
+MCSFLAGS = -optimize -warnaserror
 
 lib_sources = inputlib.c
 

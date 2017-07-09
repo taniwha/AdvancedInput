@@ -65,10 +65,31 @@ class Device {
 	public static List<Device> devices { get; private set; }
 
 	private IntPtr self, next;
+	private int bsize, asize;
+	//private GCHandle bhandle, ahandle;
 
 	Device (IntPtr devptr)
 	{
 		self = devptr;
+		WrappedDevice wdev = (WrappedDevice) Marshal.PtrToStructure (devptr, typeof (WrappedDevice));
+		path = Marshal.PtrToStringAnsi(wdev.path);
+		name = Marshal.PtrToStringAnsi(wdev.name);
+		num_buttons = wdev.num_buttons;
+		buttons = new Button[wdev.num_buttons];
+		num_axes = wdev.num_axes;
+		axes = new Axis[wdev.num_axes];
+		next = wdev.next;
+		bsize = Marshal.SizeOf (typeof(Button));
+		asize = Marshal.SizeOf (typeof(Axis));
+		for (int i = 0; i < wdev.num_buttons; i++) {
+			IntPtr bptr = new IntPtr(wdev.buttons.ToInt64() + i * bsize);
+			buttons[i] = (Button) Marshal.PtrToStructure (bptr, typeof(Button));
+		}
+		for (int i = 0; i < wdev.num_axes; i++) {
+			IntPtr aptr = new IntPtr (wdev.axes.ToInt64() + i * asize);
+			axes[i] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
+		}
+#if USEUNSAFE
 		unsafe {
 			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
 
@@ -81,26 +102,27 @@ class Device {
 			num_axes = dev->num_axes;
 			axes = new Axis[dev->num_axes];
 
-			int bsize = Marshal.SizeOf (typeof(Button));
+			bsize = Marshal.SizeOf (typeof(Button));
 			if (dev->num_buttons > 0) {
 				for (int i = 0; i < dev->num_buttons; i++) {
 					IntPtr bptr = new IntPtr(dev->buttons.ToInt64() + i * bsize);
 					buttons[i] = (Button) Marshal.PtrToStructure (bptr, typeof(Button));
 				}
-				var handle = GCHandle.Alloc(buttons, GCHandleType.Pinned);
-				dev->buttons = handle.AddrOfPinnedObject();
+				//bhandle = GCHandle.Alloc(buttons, GCHandleType.Pinned);
+				//dev->buttons = bhandle.AddrOfPinnedObject();
 			}
 
-			int asize = Marshal.SizeOf (typeof(Axis));
+			asize = Marshal.SizeOf (typeof(Axis));
 			if (dev->num_axes > 0) {
 				for (int i = 0; i < dev->num_axes; i++) {
 					IntPtr aptr = new IntPtr (dev->axes.ToInt64() + i * asize);
 					axes[i] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
 				}
-				var handle = GCHandle.Alloc(axes, GCHandleType.Pinned);
-				dev->axes = handle.AddrOfPinnedObject();
+				//ahandle = GCHandle.Alloc(axes, GCHandleType.Pinned);
+				//dev->axes = ahandle.AddrOfPinnedObject();
 			}
 		}
+#endif
 	}
 
 	const int RTLD_NOW = 2; // for dlopen's flags
@@ -142,9 +164,26 @@ class Device {
 		if (InputLibWrapper.check_device_input ()) {
 			for (int i = devices.Count; i-- > 0; ) {
 				Device dev = devices[i];
+				IntPtr wbuttons, waxes;
+				WrappedDevice wdev = (WrappedDevice) Marshal.PtrToStructure (dev.self, typeof (WrappedDevice));
+				/*
+				int event_count;
 				unsafe {
 					var wdev = (WrappedDevice *) dev.self.ToPointer ();
-					dev.event_count = wdev->event_count;
+					event_count = wdev->event_count;
+					wbuttons = wdev->buttons;
+					waxes = wdev->axes;
+				}*/
+				dev.event_count = wdev.event_count;
+				wbuttons = wdev.buttons;
+				waxes = wdev.axes;
+				for (int j = 0; j < dev.num_buttons; j++) {
+					IntPtr bptr = new IntPtr(wbuttons.ToInt64() + j * dev.bsize);
+					dev.buttons[j] = (Button) Marshal.PtrToStructure (bptr, typeof(Button));
+				}
+				for (int j = 0; j < dev.num_axes; j++) {
+					IntPtr aptr = new IntPtr (waxes.ToInt64() + j * dev.asize);
+					dev.axes[j] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
 				}
 			}
 			return true;

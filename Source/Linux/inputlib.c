@@ -197,6 +197,7 @@ check_device_input (void)
 	_timeout.tv_sec = 0;
 	_timeout.tv_usec = 0;
 
+	memset (&fdset, 0, sizeof (fdset));
 	for (dev = devices; dev; dev = dev->next) {
 		FD_SET (dev->fd, &fdset);
 		if (dev->fd > maxfd) {
