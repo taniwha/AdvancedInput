@@ -2,12 +2,12 @@ MODNAME		:= AdvancedInput
 KSPDIR		:= ${HOME}/ksp/KSP_linux
 MANAGED		:= ${KSPDIR}/KSP_Data/Managed
 GAMEDATA	:= ${KSPDIR}/GameData
-MSCGAMEDATA := ${GAMEDATA}/${MODNAME}
-PLUGINDIR	:= ${MSCGAMEDATA}/Plugins
+MODGAMEDATA := ${GAMEDATA}/${MODNAME}
+PLUGINDIR	:= ${MODGAMEDATA}/Plugins
 
 TARGETS		:= bin/${MODNAME}.dll
 
-MSC_FILES := \
+MOD_FILES := \
     Assembly/AssemblyInfo.cs	\
 	Assembly/VersionReport.cs	\
 	Linux/InputLib.cs			\
@@ -46,7 +46,7 @@ info:
 	@echo "    zip:        ${ZIP}"
 	@echo "    KSP Data:   ${KSPDIR}"
 
-bin/${MODNAME}.dll: ${MSC_FILES}
+bin/${MODNAME}.dll: ${MOD_FILES}
 	@mkdir -p bin
 	${GMCS} ${GMCSFLAGS} -t:library -lib:${MANAGED} \
 		-r:Assembly-CSharp,Assembly-CSharp-firstpass \
@@ -66,6 +66,6 @@ install: all
 	done
 	mkdir -p ${PLUGINDIR}
 	cp ${TARGETS} ${PLUGINDIR}
-#	cp ${DOC_FILES} ${MSCGAMEDATA}
+#	cp ${DOC_FILES} ${MODGAMEDATA}
 
 .PHONY: all clean install

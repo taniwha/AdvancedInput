@@ -2,8 +2,8 @@ MODNAME		:= AdvancedInput
 KSPDIR		:= ${HOME}/ksp/KSP_linux
 MANAGED		:= ${KSPDIR}/KSP_Data/Managed
 GAMEDATA	:= ${KSPDIR}/GameData
-MSCGAMEDATA := ${GAMEDATA}/${MODNAME}
-PLUGINDIR	:= ${MSCGAMEDATA}/Plugins
+MODGAMEDATA := ${GAMEDATA}/${MODNAME}
+PLUGINDIR	:= ${MODGAMEDATA}/Plugins
 
 RESGEN2	:= resgen2
 GMCS	:= gmcs
@@ -30,8 +30,8 @@ install:
 	@for dir in ${SUBDIRS}; do \
 		make -C $$dir $@ || exit 1; \
 	done
-	mkdir -p ${MSCGAMEDATA}
-	cp ${DATA} ${MSCGAMEDATA}
+	mkdir -p ${MODGAMEDATA}
+	cp ${DATA} ${MODGAMEDATA}
 
 info:
 	@echo "${MODNAME} Build Information"
