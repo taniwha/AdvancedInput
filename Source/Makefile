@@ -14,6 +14,7 @@ MOD_FILES := \
 	AdvancedInput.cs			\
 	Data.cs						\
 	DeviceNamesContainer.cs		\
+	FlightControl.cs			\
 	$e
 
 DOC_FILES := \
