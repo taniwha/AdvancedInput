@@ -93,11 +93,11 @@ namespace AdvancedInput {
 		}
 
 		Device dev;
+		int devidx;
 		
 		void Start ()
 		{
 			Device.Scan ();
-			dev = Device.devices[0];
 			UpdateGUIState ();
 		}
 
@@ -121,15 +121,15 @@ namespace AdvancedInput {
 			GUILayout.BeginVertical ();
 
 			for (int i = 0; i < dev.num_buttons; i++) {
+				if (i > 0 && (i % 9) == 0) {
+					GUILayout.EndVertical ();
+					GUILayout.BeginVertical ();
+				}
 				GUILayout.BeginHorizontal ();
 				GUILayout.Label (i.ToString());
 				GUILayout.FlexibleSpace ();
 				GUILayout.Label (dev.buttons[i].state.ToString());
 				GUILayout.EndHorizontal ();
-				if (i > 0 && (i % 9) == 0) {
-					GUILayout.EndVertical ();
-					GUILayout.BeginVertical ();
-				}
 			}
 
 			GUILayout.EndVertical ();
@@ -137,8 +137,13 @@ namespace AdvancedInput {
 
 		void WindowGUI (int windowID)
 		{
+			dev = Device.devices[devidx];
 			Device.CheckInput ();
-			GUILayout.Label (dev.name);
+			if (GUILayout.Button (dev.name)) {
+				if (++devidx >= Device.devices.Count) {
+					devidx = 0;
+				}
+			}
 			GUILayout.BeginHorizontal ();
 			DumpAxes ();
 			DumpButtons ();
