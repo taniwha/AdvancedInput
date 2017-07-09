@@ -121,15 +121,15 @@ namespace AdvancedInput {
 			GUILayout.BeginVertical ();
 
 			for (int i = 0; i < dev.num_buttons; i++) {
-				if (i > 0 && (i % 9) == 0) {
-					GUILayout.EndVertical ();
-					GUILayout.BeginVertical ();
-				}
 				GUILayout.BeginHorizontal ();
 				GUILayout.Label (i.ToString());
 				GUILayout.FlexibleSpace ();
 				GUILayout.Label (dev.buttons[i].state.ToString());
 				GUILayout.EndHorizontal ();
+				if (i > 0 && (i % 9) == 0) {
+					GUILayout.EndVertical ();
+					GUILayout.BeginVertical ();
+				}
 			}
 
 			GUILayout.EndVertical ();
