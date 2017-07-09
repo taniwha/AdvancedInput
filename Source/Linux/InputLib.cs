@@ -89,40 +89,6 @@ class Device {
 			IntPtr aptr = new IntPtr (wdev.axes.ToInt64() + i * asize);
 			axes[i] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
 		}
-#if USEUNSAFE
-		unsafe {
-			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
-
-			next = dev->next;
-
-			path = Marshal.PtrToStringAnsi(dev->path);
-			name = Marshal.PtrToStringAnsi(dev->name);
-			num_buttons = dev->num_buttons;
-			buttons = new Button[dev->num_buttons];
-			num_axes = dev->num_axes;
-			axes = new Axis[dev->num_axes];
-
-			bsize = Marshal.SizeOf (typeof(Button));
-			if (dev->num_buttons > 0) {
-				for (int i = 0; i < dev->num_buttons; i++) {
-					IntPtr bptr = new IntPtr(dev->buttons.ToInt64() + i * bsize);
-					buttons[i] = (Button) Marshal.PtrToStructure (bptr, typeof(Button));
-				}
-				//bhandle = GCHandle.Alloc(buttons, GCHandleType.Pinned);
-				//dev->buttons = bhandle.AddrOfPinnedObject();
-			}
-
-			asize = Marshal.SizeOf (typeof(Axis));
-			if (dev->num_axes > 0) {
-				for (int i = 0; i < dev->num_axes; i++) {
-					IntPtr aptr = new IntPtr (dev->axes.ToInt64() + i * asize);
-					axes[i] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
-				}
-				//ahandle = GCHandle.Alloc(axes, GCHandleType.Pinned);
-				//dev->axes = ahandle.AddrOfPinnedObject();
-			}
-		}
-#endif
 	}
 
 	const int RTLD_NOW = 2; // for dlopen's flags
@@ -131,19 +97,19 @@ class Device {
 	static extern IntPtr dlopen(string filename, int flags);
 	[DllImport("libdl.so", CallingConvention = CallingConvention.Cdecl)]
 	static extern int dlclose(IntPtr handle);
-	static IntPtr handle;
+	static IntPtr dlhandle;
 	   
 	public static void open ()
 	{
 		string dll = Assembly.GetExecutingAssembly().Location;
 		string dir = System.IO.Path.GetDirectoryName(dll);
 		string libPath = dir + "/" + "libinputlib.so";
-		handle = dlopen(libPath, RTLD_NOW|RTLD_GLOBAL);
+		dlhandle = dlopen(libPath, RTLD_NOW|RTLD_GLOBAL);
 	}
 
 	public static void close ()
 	{
-		dlclose (handle);
+		dlclose (dlhandle);
 	}
 
 
@@ -166,14 +132,6 @@ class Device {
 				Device dev = devices[i];
 				IntPtr wbuttons, waxes;
 				WrappedDevice wdev = (WrappedDevice) Marshal.PtrToStructure (dev.self, typeof (WrappedDevice));
-				/*
-				int event_count;
-				unsafe {
-					var wdev = (WrappedDevice *) dev.self.ToPointer ();
-					event_count = wdev->event_count;
-					wbuttons = wdev->buttons;
-					waxes = wdev->axes;
-				}*/
 				dev.event_count = wdev.event_count;
 				wbuttons = wdev.buttons;
 				waxes = wdev.axes;
