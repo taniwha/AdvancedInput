@@ -38,15 +38,29 @@ namespace AdvancedInput {
 		bool updateMainThrottle;
 		bool updateWheelThrottle;
 
+		List<Device> devices;
+
+		public static AI_FlightControl instance { get; private set; }
+
 		void Awake ()
 		{
+			instance = this;
 			GameEvents.onVesselChange.Add (OnVesselChange);
 			ctrlState = new FlightCtrlState ();
+			devices = new List<Device> ();
 		}
 
 		void OnDestroy ()
 		{
+			instance = null;
 			GameEvents.onVesselChange.Remove (OnVesselChange);
+		}
+
+		void Start ()
+		{
+			foreach (var dev in InputLib.Device.devices) {
+				devices.Add (new Device (dev));
+			}
 		}
 
 		Vessel currentVessel;
@@ -71,6 +85,10 @@ namespace AdvancedInput {
 
 		void OnFlyByWire (FlightCtrlState state)
 		{
+			InputLib.Device.CheckInput ();
+			for (int i = devices.Count; i-- > 0; ) {
+				devices[i].CheckInput ();
+			}
 			if (!ctrlState.isIdle) {
 				state.roll = ctrlState.roll;
 				state.pitch = ctrlState.pitch;
@@ -158,7 +176,7 @@ namespace AdvancedInput {
 			if (method == null) {
 				return null;
 			}
-			return Delegate.CreateDelegate(typeof(T), method);
+			return Delegate.CreateDelegate(typeof(T), instance, method);
 		}
 
 		public static AxisBindingDelegate GetAxisBinding (string name)
@@ -171,6 +189,96 @@ namespace AdvancedInput {
 		{
 			object binding = FindBinding<ButtonBindingDelegate> ("ButtonBinding_" + name);
 			return (ButtonBindingDelegate) binding;
+		}
+
+
+
+
+
+		void DumpLine (string name, object value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ());
+			GUILayout.EndHorizontal ();
+		}
+
+		void DumpState ()
+		{
+			GUILayout.BeginVertical ();
+			DumpLine ("mThrot", ctrlState.mainThrottle);
+			DumpLine ("roll", ctrlState.roll);
+			DumpLine ("yaw", ctrlState.yaw);
+			DumpLine ("pitch", ctrlState.pitch);
+			DumpLine ("wheelSteer", ctrlState.wheelSteer);
+			DumpLine ("wheelThrottle", ctrlState.wheelThrottle);
+			DumpLine ("X", ctrlState.X);
+			DumpLine ("Y", ctrlState.Y);
+			DumpLine ("Z", ctrlState.Z);
+			GUILayout.EndVertical ();
+		}
+
+		void DumpAxes (Device dev)
+		{
+			GUILayout.BeginVertical ();
+
+			for (int i = 0; i < dev.num_axes; i++) {
+				DumpLine (dev.AxisName (i), dev.AxisValue (i));
+			}
+
+			GUILayout.EndVertical ();
+		}
+
+		void DumpButtons (Device dev)
+		{
+			GUILayout.BeginVertical ();
+
+			for (int i = 0; i < dev.num_buttons; i++) {
+				if (i > 0 && (i % 20) == 0) {
+					GUILayout.EndVertical ();
+					GUILayout.BeginVertical ();
+				}
+				DumpLine (dev.ButtonName (i), dev.ButtonState (i));
+			}
+
+			GUILayout.EndVertical ();
+		}
+
+		int devidx;
+		static Rect windowpos;
+		void WindowGUI (int windowID)
+		{
+			if (devices.Count < 1) {
+				return;
+			}
+			Device dev = devices[devidx];
+			if (GUILayout.Button (dev.name)) {
+				if (++devidx >= devices.Count) {
+					devidx = 0;
+				}
+			}
+			GUILayout.BeginHorizontal ();
+			DumpState ();
+			DumpAxes (dev);
+			DumpButtons (dev);
+			GUILayout.EndHorizontal ();
+			GUI.DragWindow (new Rect (0, 0, 10000, 20));
+		}
+
+		void OnGUI ()
+		{
+			GUI.skin = HighLogic.Skin;
+			if (windowpos.x == 0) {
+				windowpos = new Rect (Screen.width / 2 - 250,
+					Screen.height / 2 - 30, 0, 0);
+			}
+			string name = "Advanced Input";
+			string ver = AdvancedInputVersionReport.GetVersion ();
+			windowpos = GUILayout.Window (GetInstanceID (),
+				windowpos, WindowGUI,
+				name + " " + ver,
+				GUILayout.Width (500));
 		}
 	}
 }

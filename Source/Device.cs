@@ -32,6 +32,12 @@ namespace AdvancedInput {
 
 		InputLib.Device rawDevice;
 
+		public int num_axes { get { return rawDevice.num_axes; } }
+		public int num_buttons { get { return rawDevice.num_buttons; } }
+		public string name { get { return rawDevice.name; } }
+
+		DeviceNamesContainer devNames;
+
 		void ParseConfig (ConfigNode node)
 		{
 			foreach (ConfigNode n in node.nodes) {
@@ -54,11 +60,16 @@ namespace AdvancedInput {
 
 		public Device (InputLib.Device dev)
 		{
-			rawDevice = dev;
+			axisBindings = new List<AxisBinding> ();
+			buttonBindings = new List<ButtonBinding> ();
 			axisRecipes = new AxisRecipe[dev.axes.Length];
 			for (int i = 0; i < axisRecipes.Length; i++) {
 				axisRecipes[i] = new AxisRecipe ();
 			}
+
+			rawDevice = dev;
+
+			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
 			ConfigNode node;
 			if (AI_Database.DeviceConfigs.TryGetValue (dev.name, out node)) {
 				ParseConfig (node);
@@ -74,6 +85,34 @@ namespace AdvancedInput {
 		{
 			AxisRecipe recipe = axisRecipes[index];
 			return recipe.Process (ref rawDevice.axes[index]);
+		}
+
+		public string AxisName (int index)
+		{
+			if (devNames != null) {
+				return devNames.AxisName (index);
+			} else {
+				return index.ToString ();
+			}
+		}
+
+		public string ButtonName (int index)
+		{
+			if (devNames != null) {
+				return devNames.ButtonName (index);
+			} else {
+				return index.ToString ();
+			}
+		}
+
+		public void CheckInput ()
+		{
+			for (int i = axisBindings.Count; i-- > 0; ) {
+				axisBindings[i].Update ();
+			}
+			for (int i = buttonBindings.Count; i-- > 0; ) {
+				buttonBindings[i].Update ();
+			}
 		}
 	}
 }
