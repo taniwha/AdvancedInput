@@ -31,6 +31,7 @@ namespace AdvancedInput {
 		};
 
 		public int axis { get; private set; }
+		public int deadzone { get; private set; }
 		public bool balanced { get; private set; }
 		public bool inverted { get; private set; }
 
@@ -48,6 +49,9 @@ namespace AdvancedInput {
 			if (int.TryParse (node.GetValue ("index"), out i)) {
 				axis = i;
 			}
+			if (int.TryParse (node.GetValue ("deadzone"), out i)) {
+				deadzone = i;
+			}
 			if (bool.TryParse (node.GetValue ("balanced"), out b)) {
 				balanced = b;
 			}
@@ -58,27 +62,36 @@ namespace AdvancedInput {
 
 		public float Process (ref InputLib.Axis axis)
 		{
+			float dz = deadzone;
 			float value = axis.value;
 			float min = axis.min;
 			float max = axis.max;
+			float range = max - min - dz;
 
 			if (balanced) {
 				float mid = (min + max) / 2;
-				float range = (max - min) / 2;
+				range = (range - dz) / 2;
 
 				if (inverted) {
-					value = (mid - value) / range;
+					value = (mid - value);
 				} else {
-					value = (value - mid) / range;
+					value = (value - mid);
 				}
 			} else {
 				if (inverted) {
-					value = (max - value) / (max - min);
+					value = (max - value);
 				} else {
-					value = (value - min) / (max - min);
+					value = (value - min);
 				}
 			}
-			return value;
+			if (value > dz) {
+				value -= dz;
+			} else if (value < -dz) {
+				value += dz;
+			} else {
+				value = 0;
+			}
+			return value / range;
 		}
 	}
 }
