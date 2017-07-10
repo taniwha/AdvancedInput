@@ -35,8 +35,10 @@ namespace AdvancedInput {
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
 
-		float prevMainThrottle;
-		float prevWheelThrottle;
+		public float prevMainThrottle;
+		public float prevWheelThrottle;
+		public bool mainThrottleLock;
+		public bool wheelThrottleLock;
 
 		List<Device> devices;
 
@@ -132,14 +134,14 @@ namespace AdvancedInput {
 
 		public void AxisBinding_MainThrottle (float value, bool updated)
 		{
-			if (updated) {
+			if (updated && !mainThrottleLock) {
 				ctrlState.mainThrottle = value;
 			}
 		}
 
 		public void AxisBinding_WheelThrottle (float value, bool updated)
 		{
-			if (updated) {
+			if (updated && !wheelThrottleLock) {
 				ctrlState.wheelThrottle = value;
 			}
 		}
@@ -177,6 +179,30 @@ namespace AdvancedInput {
 		public void AxisBinding_WheelSteer (float value, bool updated)
 		{
 			ctrlState.wheelSteer = value;
+		}
+
+		public void ButtonBinding_MainThrottleLock (int state, bool edge)
+		{
+			mainThrottleLock = state != 0;
+		}
+
+		public void ButtonBinding_ToggleMainThrottleLock (int state, bool edge)
+		{
+			if (state > 0 && edge) {
+				mainThrottleLock = !mainThrottleLock;
+			}
+		}
+
+		public void ButtonBinding_WheelThrottleLock (int state, bool edge)
+		{
+			wheelThrottleLock = state != 0;
+		}
+
+		public void ButtonBinding_ToggleWheelThrottleLock (int state, bool edge)
+		{
+			if (state > 0 && edge) {
+				wheelThrottleLock = !wheelThrottleLock;
+			}
 		}
 
 		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
