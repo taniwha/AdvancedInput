@@ -13,6 +13,7 @@ TAR			:= tar
 ZIP			:= zip
 
 DATA := \
+	deviceconfig.cfg \
 	saitek_x52.cfg	\
 	$e
 

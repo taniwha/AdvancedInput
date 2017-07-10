@@ -12,7 +12,11 @@ MOD_FILES := \
 	Assembly/VersionReport.cs	\
 	Linux/InputLib.cs			\
 	AdvancedInput.cs			\
+	AxisBinding.cs				\
+	AxisRecipe.cs				\
+	ButtonBinding.cs			\
 	Data.cs						\
+	Device.cs					\
 	DeviceNamesContainer.cs		\
 	FlightControl.cs			\
 	$e

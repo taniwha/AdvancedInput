@@ -16,6 +16,7 @@ along with Advanced Input.  If not, see
 <http://www.gnu.org/licenses/>.
 */
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,16 +24,19 @@ using KSP.IO;
 
 namespace AdvancedInput {
 
+	public delegate void AxisBindingDelegate (float value, bool updated);
+	public delegate void ButtonBindingDelegate (int state, bool edge);
+
 	[KSPAddon (KSPAddon.Startup.Flight, false)]
 	public class AI_FlightControl : MonoBehaviour
 	{
-		FlightCtrlState ctrlState;
+		static FlightCtrlState ctrlState;
 
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
 
-		bool updateMainThrottle;
-		bool updateWheelThrottle;
+		static bool updateMainThrottle;
+		static bool updateWheelThrottle;
 
 		void Awake ()
 		{
@@ -99,51 +103,74 @@ namespace AdvancedInput {
 			}
 		}
 
-		void UpdateMainThrottle (float value)
+		public static void AxisBinding_MainThrottle (float value, bool updated)
 		{
-			updateMainThrottle = ctrlState.mainThrottle != value;
+			updateMainThrottle = updated;
 			ctrlState.mainThrottle = value;
 		}
 
-		void UpdateWheelThrottle (float value)
+		public static void AxisBinding_WheelThrottle (float value, bool updated)
 		{
-			updateWheelThrottle = ctrlState.wheelThrottle != value;
+			updateWheelThrottle = updated;
 			ctrlState.wheelThrottle = value;
 		}
 
-		void UpdatePitch (float value)
+		public static void AxisBinding_Pitch (float value, bool updated)
 		{
 			ctrlState.pitch = value;
 		}
 
-		void UpdateYaw (float value)
+		public static void AxisBinding_Yaw (float value, bool updated)
 		{
 			ctrlState.yaw = value;
 		}
 
-		void UpdateRoll (float value)
+		public static void AxisBinding_Roll (float value, bool updated)
 		{
 			ctrlState.roll = value;
 		}
 
-		void UpdateX (float value)
+		public static void AxisBinding_X (float value, bool updated)
 		{
 			ctrlState.X = value;
 		}
 
-		void UpdateY (float value)
+		public static void AxisBinding_Y (float value, bool updated)
 		{
 			ctrlState.Y = value;
 		}
 
-		void UpdateZ (float value)
+		public static void AxisBinding_Z (float value, bool updated)
 		{
 			ctrlState.Z = value;
 		}
 
-		void UpdateWheelSteer (float value)
+		public static void AxisBinding_WheelSteer (float value, bool updated)
 		{
 			ctrlState.wheelSteer = value;
+		}
+
+		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Static;
+		static object FindBinding<T> (string name)
+		{
+			Type type = typeof (AI_FlightControl);
+			var method = type.GetMethod (name, bindingFlags);
+			if (method == null) {
+				return null;
+			}
+			return Delegate.CreateDelegate(typeof(T), method);
+		}
+
+		public static AxisBindingDelegate GetAxisBinding (string name)
+		{
+			object binding = FindBinding<AxisBindingDelegate> ("AxisBinding_" + name);
+			return (AxisBindingDelegate) binding;
+		}
+
+		public static ButtonBindingDelegate GetButtonBinding (string name)
+		{
+			object binding = FindBinding<ButtonBindingDelegate> ("ButtonBinding_" + name);
+			return (ButtonBindingDelegate) binding;
 		}
 	}
 }
