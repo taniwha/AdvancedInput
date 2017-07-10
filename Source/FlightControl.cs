@@ -35,8 +35,8 @@ namespace AdvancedInput {
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
 
-		bool updateMainThrottle;
-		bool updateWheelThrottle;
+		float prevMainThrottle;
+		float prevWheelThrottle;
 
 		List<Device> devices;
 
@@ -48,6 +48,8 @@ namespace AdvancedInput {
 			GameEvents.onVesselChange.Add (OnVesselChange);
 			ctrlState = new FlightCtrlState ();
 			devices = new List<Device> ();
+			prevMainThrottle = -2;
+			prevWheelThrottle = -2;
 		}
 
 		void OnDestroy ()
@@ -111,26 +113,35 @@ namespace AdvancedInput {
 			state.headlight ^= ctrlState.headlight;
 			*/
 
-			if (overrideMainThrottle || updateMainThrottle) {
-				state.mainThrottle = ctrlState.mainThrottle;
-				updateMainThrottle = false;
+			if (prevMainThrottle != state.mainThrottle) {
+				prevMainThrottle = state.mainThrottle;
+				if (!overrideMainThrottle) {
+					ctrlState.mainThrottle = state.mainThrottle;
+				}
 			}
-			if (overrideWheelThrottle || updateWheelThrottle) {
-				state.wheelThrottle = ctrlState.wheelThrottle;
-				updateWheelThrottle = false;
+			if (prevWheelThrottle != state.wheelThrottle) {
+				prevWheelThrottle = state.wheelThrottle;
+				if (!overrideWheelThrottle) {
+					ctrlState.wheelThrottle = state.wheelThrottle;
+				}
 			}
+
+			state.mainThrottle = ctrlState.mainThrottle;
+			state.wheelThrottle = ctrlState.wheelThrottle;
 		}
 
 		public void AxisBinding_MainThrottle (float value, bool updated)
 		{
-			updateMainThrottle = updated;
-			ctrlState.mainThrottle = value;
+			if (updated) {
+				ctrlState.mainThrottle = value;
+			}
 		}
 
 		public void AxisBinding_WheelThrottle (float value, bool updated)
 		{
-			updateWheelThrottle = updated;
-			ctrlState.wheelThrottle = value;
+			if (updated) {
+				ctrlState.wheelThrottle = value;
+			}
 		}
 
 		public void AxisBinding_Pitch (float value, bool updated)
