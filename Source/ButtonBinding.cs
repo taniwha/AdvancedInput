@@ -28,7 +28,7 @@ namespace AdvancedInput {
 		public int index { get; private set; }
 		public Device device { get; private set; }
 		public ButtonBindingDelegate binding { get; private set; }
-		public float prevValue { get; private set; }
+		public int prevState { get; private set; }
 
 		public ButtonBinding (Device dev, ConfigNode node)
 		{
@@ -41,13 +41,14 @@ namespace AdvancedInput {
 
 			device = dev;
 
-			prevValue = device.ButtonState (index);
+			prevState = device.ButtonState (index);
 		}
 
 		public void Update ()
 		{
 			int state = device.ButtonState (index);
-			bool edge = state != prevValue;
+			bool edge = state != prevState;
+			prevState = state;
 			binding (state, edge);
 		}
 	}
