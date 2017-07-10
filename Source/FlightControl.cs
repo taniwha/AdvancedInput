@@ -49,7 +49,7 @@ namespace AdvancedInput {
 			ctrlState = new FlightCtrlState ();
 			devices = new List<Device> ();
 			prevMainThrottle = -2;
-			prevWheelThrottle = -2;
+			prevMainThrottle = -2;
 		}
 
 		void OnDestroy ()
