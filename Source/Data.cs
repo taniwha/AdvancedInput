@@ -29,6 +29,7 @@ namespace AdvancedInput {
 	{
 		public static string DataPath { get; private set; }
 		public static Dictionary<string, DeviceNamesContainer> DeviceNames { get; private set; }
+		public static Dictionary<string, ConfigNode> DeviceConfigs { get; private set; }
 
 		void LoadConfigFiles ()
 		{
@@ -43,6 +44,9 @@ namespace AdvancedInput {
 							var devNames = new DeviceNamesContainer (n);
 							DeviceNames[devNames.name] = devNames;
 							break;
+						case "DeviceConfig":
+							DeviceConfigs[n.GetValue("name")] = n;
+							break;
 					}
 				}
 			}
@@ -51,6 +55,7 @@ namespace AdvancedInput {
 		void Awake ()
 		{
 			DeviceNames = new Dictionary<string, DeviceNamesContainer> ();
+			DeviceConfigs = new Dictionary<string, ConfigNode> ();
 			GameObject.DontDestroyOnLoad(this);
 			DataPath = AssemblyLoader.loadedAssemblies.GetPathByType (typeof (AI_Database));
 			LoadConfigFiles ();

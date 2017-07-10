@@ -32,12 +32,36 @@ namespace AdvancedInput {
 
 		InputLib.Device rawDevice;
 
+		void ParseConfig (ConfigNode node)
+		{
+			foreach (ConfigNode n in node.nodes) {
+				switch (n.name) {
+					case "AxisRecipe":
+						var ar = new AxisRecipe (n);
+						axisRecipes[ar.axis] = ar;
+						break;
+					case "AxisBinding":
+						var ab = new AxisBinding (this, n);
+						axisBindings.Add (ab);
+						break;
+					case "ButtonBinding":
+						var bb = new ButtonBinding (this, n);
+						buttonBindings.Add (bb);
+						break;
+				}
+			}
+		}
+
 		public Device (InputLib.Device dev)
 		{
 			rawDevice = dev;
 			axisRecipes = new AxisRecipe[dev.axes.Length];
 			for (int i = 0; i < axisRecipes.Length; i++) {
 				axisRecipes[i] = new AxisRecipe ();
+			}
+			ConfigNode node;
+			if (AI_Database.DeviceConfigs.TryGetValue (dev.name, out node)) {
+				ParseConfig (node);
 			}
 		}
 
