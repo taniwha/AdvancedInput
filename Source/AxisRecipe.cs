@@ -30,6 +30,7 @@ namespace AdvancedInput {
 			Unbalanced,
 		};
 
+		public int axis { get; private set; }
 		public bool balanced { get; private set; }
 		public bool inverted { get; private set; }
 
@@ -42,6 +43,11 @@ namespace AdvancedInput {
 		public AxisRecipe (ConfigNode node)
 		{
 			bool b;
+			int i;
+
+			if (int.TryParse (node.GetValue ("index"), out i)) {
+				axis = i;
+			}
 			if (bool.TryParse (node.GetValue ("balanced"), out b)) {
 				balanced = b;
 			}
