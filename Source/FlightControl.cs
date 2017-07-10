@@ -30,13 +30,13 @@ namespace AdvancedInput {
 	[KSPAddon (KSPAddon.Startup.Flight, false)]
 	public class AI_FlightControl : MonoBehaviour
 	{
-		static FlightCtrlState ctrlState;
+		FlightCtrlState ctrlState;
 
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
 
-		static bool updateMainThrottle;
-		static bool updateWheelThrottle;
+		bool updateMainThrottle;
+		bool updateWheelThrottle;
 
 		void Awake ()
 		{
@@ -103,54 +103,54 @@ namespace AdvancedInput {
 			}
 		}
 
-		public static void AxisBinding_MainThrottle (float value, bool updated)
+		public void AxisBinding_MainThrottle (float value, bool updated)
 		{
 			updateMainThrottle = updated;
 			ctrlState.mainThrottle = value;
 		}
 
-		public static void AxisBinding_WheelThrottle (float value, bool updated)
+		public void AxisBinding_WheelThrottle (float value, bool updated)
 		{
 			updateWheelThrottle = updated;
 			ctrlState.wheelThrottle = value;
 		}
 
-		public static void AxisBinding_Pitch (float value, bool updated)
+		public void AxisBinding_Pitch (float value, bool updated)
 		{
 			ctrlState.pitch = value;
 		}
 
-		public static void AxisBinding_Yaw (float value, bool updated)
+		public void AxisBinding_Yaw (float value, bool updated)
 		{
 			ctrlState.yaw = value;
 		}
 
-		public static void AxisBinding_Roll (float value, bool updated)
+		public void AxisBinding_Roll (float value, bool updated)
 		{
 			ctrlState.roll = value;
 		}
 
-		public static void AxisBinding_X (float value, bool updated)
+		public void AxisBinding_X (float value, bool updated)
 		{
 			ctrlState.X = value;
 		}
 
-		public static void AxisBinding_Y (float value, bool updated)
+		public void AxisBinding_Y (float value, bool updated)
 		{
 			ctrlState.Y = value;
 		}
 
-		public static void AxisBinding_Z (float value, bool updated)
+		public void AxisBinding_Z (float value, bool updated)
 		{
 			ctrlState.Z = value;
 		}
 
-		public static void AxisBinding_WheelSteer (float value, bool updated)
+		public void AxisBinding_WheelSteer (float value, bool updated)
 		{
 			ctrlState.wheelSteer = value;
 		}
 
-		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Static;
+		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
 		static object FindBinding<T> (string name)
 		{
 			Type type = typeof (AI_FlightControl);
