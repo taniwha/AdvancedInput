@@ -22,7 +22,6 @@ using System.Linq;
 using UnityEngine;
 
 using KSP.IO;
-using InputLib;
 
 namespace AdvancedInput {
 
@@ -81,7 +80,7 @@ namespace AdvancedInput {
 			instance = this;
 			GameEvents.onHideUI.Add (onHideUI);
 			GameEvents.onShowUI.Add (onShowUI);
-			Device.open();
+			InputLib.Device.open();
 		}
 
 		void OnDestroy ()
@@ -89,16 +88,16 @@ namespace AdvancedInput {
 			instance = null;
 			GameEvents.onHideUI.Remove (onHideUI);
 			GameEvents.onShowUI.Remove (onShowUI);
-			Device.close();
+			InputLib.Device.close();
 		}
 
-		Device dev;
+		InputLib.Device dev;
 		DeviceNamesContainer devNames;
 		int devidx;
 		
 		void Start ()
 		{
-			Device.Scan ();
+			InputLib.Device.Scan ();
 			UpdateGUIState ();
 		}
 
@@ -146,11 +145,11 @@ namespace AdvancedInput {
 
 		void WindowGUI (int windowID)
 		{
-			dev = Device.devices[devidx];
+			dev = InputLib.Device.devices[devidx];
 			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
-			Device.CheckInput ();
+			InputLib.Device.CheckInput ();
 			if (GUILayout.Button (dev.name)) {
-				if (++devidx >= Device.devices.Count) {
+				if (++devidx >= InputLib.Device.devices.Count) {
 					devidx = 0;
 				}
 			}

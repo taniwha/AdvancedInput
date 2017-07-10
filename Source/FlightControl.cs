@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using KSP.IO;
-using InputLib;
 
 namespace AdvancedInput {
 

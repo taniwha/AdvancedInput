@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace InputLib {
+namespace AdvancedInput.InputLib {
 
 [StructLayout(LayoutKind.Sequential)]
 struct WrappedDevice
@@ -27,14 +27,14 @@ struct WrappedDevice
 }
 
 [StructLayout(LayoutKind.Sequential)]
-struct Button
+public struct Button
 {
 	public int num, evnum;
 	public int state;
 }
 
 [StructLayout(LayoutKind.Sequential)]
-struct Axis
+public struct Axis
 {
 	public int num, evnum;
 	public int value;
@@ -53,7 +53,7 @@ static class InputLibWrapper
 	public static extern bool check_device_input ();
 }
 
-class Device {
+public class Device {
 	public string path		{ get; private set; }
 	public string name		{ get; private set; }
 	public int num_buttons	{ get; private set; }
