@@ -28,7 +28,7 @@ namespace AdvancedInput {
 	public class AI_Database : MonoBehaviour
 	{
 		public static string DataPath { get; private set; }
-		public static Dictionary<string, DeviceNamesContainer> DeviceNames;
+		public static Dictionary<string, DeviceNamesContainer> DeviceNames { get; private set; }
 
 		void LoadConfigFiles ()
 		{
