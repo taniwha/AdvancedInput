@@ -206,7 +206,16 @@ namespace AdvancedInput {
 
 
 
-		void DumpLine (string name, object value)
+		void DumpLine (string name, float value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ("G3"));
+			GUILayout.EndHorizontal ();
+		}
+
+		void DumpLine (string name, int value)
 		{
 			GUILayout.BeginHorizontal ();
 			GUILayout.Label (name);
@@ -217,7 +226,7 @@ namespace AdvancedInput {
 
 		void DumpState ()
 		{
-			GUILayout.BeginVertical ();
+			GUILayout.BeginVertical (GUILayout.Width (180));
 			DumpLine ("mThrot", ctrlState.mainThrottle);
 			DumpLine ("roll", ctrlState.roll);
 			DumpLine ("yaw", ctrlState.yaw);
@@ -232,7 +241,7 @@ namespace AdvancedInput {
 
 		void DumpAxes (Device dev)
 		{
-			GUILayout.BeginVertical ();
+			GUILayout.BeginVertical (GUILayout.Width (180));
 
 			for (int i = 0; i < dev.num_axes; i++) {
 				DumpLine (dev.AxisName (i), dev.AxisValue (i));
@@ -243,12 +252,12 @@ namespace AdvancedInput {
 
 		void DumpButtons (Device dev)
 		{
-			GUILayout.BeginVertical ();
+			GUILayout.BeginVertical (GUILayout.Width (180));
 
 			for (int i = 0; i < dev.num_buttons; i++) {
 				if (i > 0 && (i % 20) == 0) {
 					GUILayout.EndVertical ();
-					GUILayout.BeginVertical ();
+					GUILayout.BeginVertical (GUILayout.Width (180));
 				}
 				DumpLine (dev.ButtonName (i), dev.ButtonState (i));
 			}
