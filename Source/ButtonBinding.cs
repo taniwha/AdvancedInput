@@ -49,7 +49,9 @@ namespace AdvancedInput {
 			int state = device.ButtonState (index);
 			bool edge = state != prevState;
 			prevState = state;
-			binding (state, edge);
+			if (binding != null) {
+				binding (state, edge);
+			}
 		}
 	}
 }

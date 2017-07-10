@@ -49,7 +49,9 @@ namespace AdvancedInput {
 			float value = device.AxisValue (index);
 			bool updated = value != prevValue;
 			prevValue = value;
-			binding (value, updated);
+			if (binding != null) {
+				binding (value, updated);
+			}
 		}
 	}
 }
