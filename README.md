@@ -14,7 +14,7 @@ KSP to crash if high-numbered buttons are pressed (relevant to only devices
 that have more than 20 buttons). This is despite Unity claiming to ignore
 those buttons and also despite no joystick button bindings being set up in
 KSP. Fortunately, there is a workaround: remove read permission from
-/dev/lib/js\* such that Unity cannot open the device (this bug may well be
+/dev/input/js\* such that Unity cannot open the device (this bug may well be
 limited to Unity on Linux). Note that this may cause problems if you use
 your joystick in other games. This works with Advanced Input because
-Advanced Input uses /dev/lib/event\* instead.
+Advanced Input uses /dev/input/event\* instead.
