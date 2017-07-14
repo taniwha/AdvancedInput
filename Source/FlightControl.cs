@@ -30,7 +30,7 @@ namespace AdvancedInput {
 	[KSPAddon (KSPAddon.Startup.Flight, false)]
 	public class AI_FlightControl : MonoBehaviour
 	{
-		FlightCtrlState ctrlState;
+		public FlightCtrlState ctrlState;
 
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
@@ -40,12 +40,50 @@ namespace AdvancedInput {
 		public bool mainThrottleLock;
 		public bool wheelThrottleLock;
 
+		static Dictionary <string, ConstructorInfo> axisBindings;
+		static Dictionary <string, ConstructorInfo> buttonBindings;
+
 		List<Device> devices;
 
 		public static AI_FlightControl instance { get; private set; }
 
+		public static void UpdateTrim (ref float trim, float value)
+		{
+			trim = Mathf.Clamp (trim + 0.1f * value * Time.deltaTime, -1f, 1f);
+		}
+
+		static void DiscoverAxisBindings ()
+		{
+			axisBindings = new Dictionary <string, ConstructorInfo> ();
+			var modules = AssemblyLoader.GetModulesImplementingInterface<IAxisBinding> (new Type[] {typeof (AI_FlightControl), typeof (ConfigNode)});
+			var parms = new object [] {null, null};
+			foreach (var mod in modules) {
+				// create a dummy module in order to get its name
+				var ab = (IAxisBinding) mod.Invoke (parms);
+				Debug.LogFormat ("[AI_FlightControl] DiscoverAxisBindings: {0}", ab.name);
+				axisBindings[ab.name] = mod;
+			}
+		}
+
+		static void DiscoverButtonBindings ()
+		{
+			buttonBindings = new Dictionary <string, ConstructorInfo> ();
+			var modules = AssemblyLoader.GetModulesImplementingInterface<IButtonBinding> (new Type[] {typeof (AI_FlightControl), typeof (ConfigNode)});
+			var parms = new object [] {null, null};
+			foreach (var mod in modules) {
+				// create a dummy module in order to get its name
+				var bb = (IButtonBinding) mod.Invoke (parms);
+				Debug.LogFormat ("[AI_FlightControl] DiscoverButtonBindings: {0}", bb.name);
+				buttonBindings[bb.name] = mod;
+			}
+		}
+
 		void Awake ()
 		{
+			if (axisBindings == null) {
+				DiscoverAxisBindings ();
+				DiscoverButtonBindings ();
+			}
 			instance = this;
 			GameEvents.onVesselChange.Add (OnVesselChange);
 			ctrlState = new FlightCtrlState ();
@@ -132,105 +170,29 @@ namespace AdvancedInput {
 			state.wheelThrottle = ctrlState.wheelThrottle;
 		}
 
-		public void AxisBinding_MainThrottle (float value, bool updated)
+		public static IAxisBinding GetAxisBinding (ConfigNode node)
 		{
-			if (updated && !mainThrottleLock) {
-				ctrlState.mainThrottle = value;
+			string name = node.GetValue ("binding");
+			ConstructorInfo module;
+			IAxisBinding binding = null;
+			if (name != null && axisBindings.TryGetValue (name, out module)) {
+				var parms = new object [] {instance, node};
+				binding = (IAxisBinding) module.Invoke (parms);
 			}
+			return binding;
 		}
 
-		public void AxisBinding_WheelThrottle (float value, bool updated)
+		public static IButtonBinding GetButtonBinding (ConfigNode node)
 		{
-			if (updated && !wheelThrottleLock) {
-				ctrlState.wheelThrottle = value;
+			string name = node.GetValue ("binding");
+			ConstructorInfo module;
+			IButtonBinding binding = null;
+			if (name != null && buttonBindings.TryGetValue (name, out module)) {
+				var parms = new object [] {instance, node};
+				binding = (IButtonBinding) module.Invoke (parms);
 			}
+			return binding;
 		}
-
-		public void AxisBinding_Pitch (float value, bool updated)
-		{
-			ctrlState.pitch = value;
-		}
-
-		public void AxisBinding_Yaw (float value, bool updated)
-		{
-			ctrlState.yaw = value;
-		}
-
-		public void AxisBinding_Roll (float value, bool updated)
-		{
-			ctrlState.roll = value;
-		}
-
-		public void AxisBinding_X (float value, bool updated)
-		{
-			ctrlState.X = value;
-		}
-
-		public void AxisBinding_Y (float value, bool updated)
-		{
-			ctrlState.Y = value;
-		}
-
-		public void AxisBinding_Z (float value, bool updated)
-		{
-			ctrlState.Z = value;
-		}
-
-		public void AxisBinding_WheelSteer (float value, bool updated)
-		{
-			ctrlState.wheelSteer = value;
-		}
-
-		public void ButtonBinding_MainThrottleLock (int state, bool edge)
-		{
-			mainThrottleLock = state != 0;
-		}
-
-		public void ButtonBinding_ToggleMainThrottleLock (int state, bool edge)
-		{
-			if (state > 0 && edge) {
-				mainThrottleLock = !mainThrottleLock;
-			}
-		}
-
-		public void ButtonBinding_WheelThrottleLock (int state, bool edge)
-		{
-			wheelThrottleLock = state != 0;
-		}
-
-		public void ButtonBinding_ToggleWheelThrottleLock (int state, bool edge)
-		{
-			if (state > 0 && edge) {
-				wheelThrottleLock = !wheelThrottleLock;
-			}
-		}
-
-		const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance;
-		static object FindBinding<T> (string name)
-		{
-			Type type = typeof (AI_FlightControl);
-			var method = type.GetMethod (name, bindingFlags);
-			if (method == null) {
-				return null;
-			}
-			return Delegate.CreateDelegate(typeof(T), instance, method);
-		}
-
-		public static AxisBindingDelegate GetAxisBinding (string name)
-		{
-			object binding = FindBinding<AxisBindingDelegate> ("AxisBinding_" + name);
-			return (AxisBindingDelegate) binding;
-		}
-
-		public static ButtonBindingDelegate GetButtonBinding (string name)
-		{
-			object binding = FindBinding<ButtonBindingDelegate> ("ButtonBinding_" + name);
-			return (ButtonBindingDelegate) binding;
-		}
-
-
-
-
 
 		void DumpLine (string name, float value)
 		{

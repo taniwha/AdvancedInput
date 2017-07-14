@@ -10,6 +10,30 @@ TARGETS		:= bin/${MODNAME}.dll
 MOD_FILES := \
     Assembly/AssemblyInfo.cs	\
 	Assembly/VersionReport.cs	\
+	AxisBindings/MainThrottle.cs	\
+	AxisBindings/Pitch.cs	\
+	AxisBindings/PitchTrim.cs	\
+	AxisBindings/Roll.cs	\
+	AxisBindings/RollTrim.cs	\
+	AxisBindings/ThrottleIncrement.cs	\
+	AxisBindings/WheelSteer.cs	\
+	AxisBindings/WheelSteerTrim.cs	\
+	AxisBindings/WheelThrottle.cs	\
+	AxisBindings/WheelThrottleTrim.cs	\
+	AxisBindings/X.cs	\
+	AxisBindings/Y.cs	\
+	AxisBindings/Yaw.cs	\
+	AxisBindings/YawTrim.cs	\
+	AxisBindings/Z.cs	\
+	ButtonBindings/ButtonMode.cs	\
+	ButtonBindings/MainThrottleLock.cs	\
+	ButtonBindings/TranslateBack.cs	\
+	ButtonBindings/TranslateDown.cs	\
+	ButtonBindings/TranslateForward.cs	\
+	ButtonBindings/TranslateLeft.cs	\
+	ButtonBindings/TranslateRight.cs	\
+	ButtonBindings/TranslateUp.cs	\
+	ButtonBindings/WheelThrottleLock.cs	\
 	Linux/InputLib.cs			\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
@@ -19,6 +43,7 @@ MOD_FILES := \
 	Device.cs					\
 	DeviceNamesContainer.cs		\
 	FlightControl.cs			\
+	Utils.cs					\
 	$e
 
 DOC_FILES := \

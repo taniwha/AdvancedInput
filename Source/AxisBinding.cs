@@ -23,11 +23,19 @@ using UnityEngine;
 
 namespace AdvancedInput {
 
+	public interface IAxisBinding
+	{
+		string name { get; }
+		ControlTypes lockMask { get; }
+		bool locked { get; set; }
+		void Update (float value, bool updated);
+	}
+
 	public class AxisBinding
 	{
 		public int index { get; private set; }
 		public Device device { get; private set; }
-		public AxisBindingDelegate binding { get; private set; }
+		public IAxisBinding binding { get; private set; }
 		public float prevValue { get; private set; }
 
 		public AxisBinding (Device dev, ConfigNode node)
@@ -37,7 +45,7 @@ namespace AdvancedInput {
 				index = ind;
 			}
 
-			binding = AI_FlightControl.GetAxisBinding (node.GetValue ("binding"));
+			binding = AI_FlightControl.GetAxisBinding (node);
 
 			device = dev;
 
@@ -49,8 +57,8 @@ namespace AdvancedInput {
 			float value = device.AxisValue (index);
 			bool updated = value != prevValue;
 			prevValue = value;
-			if (binding != null) {
-				binding (value, updated);
+			if (binding != null && !binding.locked) {
+				binding.Update (value, updated);
 			}
 		}
 	}

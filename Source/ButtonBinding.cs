@@ -23,11 +23,19 @@ using UnityEngine;
 
 namespace AdvancedInput {
 
+	public interface IButtonBinding
+	{
+		string name { get; }
+		ControlTypes lockMask { get; }
+		bool locked { get; set; }
+		void Update (int state, bool updated);
+	}
+
 	public class ButtonBinding
 	{
 		public int index { get; private set; }
 		public Device device { get; private set; }
-		public ButtonBindingDelegate binding { get; private set; }
+		public IButtonBinding binding { get; private set; }
 		public int prevState { get; private set; }
 
 		public ButtonBinding (Device dev, ConfigNode node)
@@ -37,7 +45,7 @@ namespace AdvancedInput {
 				index = ind;
 			}
 
-			binding = AI_FlightControl.GetButtonBinding (node.GetValue ("binding"));
+			binding = AI_FlightControl.GetButtonBinding (node);
 
 			device = dev;
 
@@ -49,8 +57,8 @@ namespace AdvancedInput {
 			int state = device.ButtonState (index);
 			bool edge = state != prevState;
 			prevState = state;
-			if (binding != null) {
-				binding (state, edge);
+			if (binding != null && !binding.locked) {
+				binding.Update (state, edge);
 			}
 		}
 	}
