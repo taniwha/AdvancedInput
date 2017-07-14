@@ -61,5 +61,12 @@ namespace AdvancedInput {
 				binding.Update (value, updated);
 			}
 		}
+
+		public void UpdateInputLock (ulong mask)
+		{
+			if (binding != null) {
+				binding.locked = ((ulong)binding.lockMask & mask) != 0;
+			}
+		}
 	}
 }

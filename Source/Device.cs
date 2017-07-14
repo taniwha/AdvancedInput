@@ -114,5 +114,15 @@ namespace AdvancedInput {
 				buttonBindings[i].Update ();
 			}
 		}
+
+		public void UpdateInputLock (ulong mask)
+		{
+			for (int i = axisBindings.Count; i-- > 0; ) {
+				axisBindings[i].UpdateInputLock (mask);
+			}
+			for (int i = buttonBindings.Count; i-- > 0; ) {
+				buttonBindings[i].UpdateInputLock (mask);
+			}
+		}
 	}
 }

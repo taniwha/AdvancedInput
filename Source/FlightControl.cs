@@ -34,6 +34,7 @@ namespace AdvancedInput {
 
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
+		public static bool blockApplicationFocusLock;
 
 		public float prevMainThrottle;
 		public float prevWheelThrottle;
@@ -86,6 +87,7 @@ namespace AdvancedInput {
 			}
 			instance = this;
 			GameEvents.onVesselChange.Add (OnVesselChange);
+			GameEvents.onInputLocksModified.Add (OnInputLocksModified);
 			ctrlState = new FlightCtrlState ();
 			devices = new List<Device> ();
 			prevMainThrottle = -2;
@@ -96,6 +98,7 @@ namespace AdvancedInput {
 		{
 			instance = null;
 			GameEvents.onVesselChange.Remove (OnVesselChange);
+			GameEvents.onInputLocksModified.Remove (OnInputLocksModified);
 		}
 
 		void Start ()
@@ -123,6 +126,19 @@ namespace AdvancedInput {
 			 * vessel.OnPostAutopilotUpdate;
 			 * vessel.OnFlyByWire;
 			 */
+		}
+
+		const string appLock = "flightDriver_ApplicationFocus";
+		void OnInputLocksModified (GameEvents.FromToAction<ControlTypes, ControlTypes> fromto)
+		{
+			if (blockApplicationFocusLock) {
+				if (InputLockManager.lockStack.ContainsKey (appLock)) {
+					InputLockManager.RemoveControlLock (appLock);
+				}
+			}
+			for (int i = devices.Count; i-- > 0; ) {
+				devices[i].UpdateInputLock (InputLockManager.lockMask);
+			}
 		}
 
 		void OnFlyByWire (FlightCtrlState state)
