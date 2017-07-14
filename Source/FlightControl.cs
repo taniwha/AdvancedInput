@@ -135,17 +135,8 @@ namespace AdvancedInput {
 				state.roll = ctrlState.roll + state.rollTrim;
 				state.pitch = ctrlState.pitch + state.pitchTrim;
 				state.yaw = ctrlState.yaw + state.yawTrim;
-				state.X = ctrlState.X;
-				state.Y = ctrlState.Y;
-				state.Z = ctrlState.Z;
 				state.wheelSteer = ctrlState.wheelSteer + state.wheelSteerTrim;
 			}
-			// trim edited directly
-			//state.pitchTrim += ctrlState.pitchTrim;
-			//state.yawTrim += ctrlState.yawTrim;
-			//state.rollTrim += ctrlState.rollTrim;
-			//state.wheelSteerTrim += ctrlState.wheelSteerTrim;
-			//state.wheelThrottleTrim += ctrlState.wheelThrottleTrim;
 
 			/* it seems these have no affect
 			state.killRot ^= ctrlState.killRot;

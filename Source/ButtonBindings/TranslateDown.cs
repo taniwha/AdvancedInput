@@ -30,18 +30,15 @@ namespace AdvancedInput.ButtonBindings {
 		public ControlTypes lockMask { get { return ControlTypes.LINEAR; } }
 		public bool locked { get; set; }
 
-		AI_FlightControl flightControl;
-
 		public void Update (int state, bool edge)
 		{
 			if (state > 0) {
-				flightControl.ctrlState.Y = -1;
+				FlightInputHandler.state.Y = -1;
 			}
 		}
 
 		public AI_BB_TranslateDown (AI_FlightControl fc, ConfigNode node)
 		{
-			flightControl = fc;
 		}
 	}
 }
