@@ -212,18 +212,18 @@ namespace AdvancedInput {
 			GUILayout.EndHorizontal ();
 		}
 
-		void DumpState ()
+		void DumpState (FlightCtrlState state)
 		{
 			GUILayout.BeginVertical (GUILayout.Width (180));
-			DumpLine ("mThrot", ctrlState.mainThrottle);
-			DumpLine ("roll", ctrlState.roll);
-			DumpLine ("yaw", ctrlState.yaw);
-			DumpLine ("pitch", ctrlState.pitch);
-			DumpLine ("wheelSteer", ctrlState.wheelSteer);
-			DumpLine ("wheelThrottle", ctrlState.wheelThrottle);
-			DumpLine ("X", ctrlState.X);
-			DumpLine ("Y", ctrlState.Y);
-			DumpLine ("Z", ctrlState.Z);
+			DumpLine ("mThrot", state.mainThrottle);
+			DumpLine ("roll", state.roll);
+			DumpLine ("yaw", state.yaw);
+			DumpLine ("pitch", state.pitch);
+			DumpLine ("wheelSteer", state.wheelSteer);
+			DumpLine ("wheelThrottle", state.wheelThrottle);
+			DumpLine ("X", state.X);
+			DumpLine ("Y", state.Y);
+			DumpLine ("Z", state.Z);
 			GUILayout.EndVertical ();
 		}
 
@@ -267,7 +267,8 @@ namespace AdvancedInput {
 				}
 			}
 			GUILayout.BeginHorizontal ();
-			DumpState ();
+			DumpState (FlightInputHandler.state);
+			DumpState (ctrlState);
 			DumpAxes (dev);
 			DumpButtons (dev);
 			GUILayout.EndHorizontal ();
