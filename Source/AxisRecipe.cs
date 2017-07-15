@@ -60,7 +60,7 @@ namespace AdvancedInput {
 			}
 		}
 
-		public float Process (ref InputLib.Axis axis)
+		public float Process (ref InputLib.Axis axis, bool invert)
 		{
 			float dz = deadzone;
 			float value = axis.value;
@@ -68,17 +68,19 @@ namespace AdvancedInput {
 			float max = axis.max;
 			float range = max - min - dz;
 
+			invert ^= inverted;
+
 			if (balanced) {
 				float mid = (min + max) / 2;
 				range = (range - dz) / 2;
 
-				if (inverted) {
+				if (invert) {
 					value = (mid - value);
 				} else {
 					value = (value - mid);
 				}
 			} else {
-				if (inverted) {
+				if (invert) {
 					value = (max - value);
 				} else {
 					value = (value - min);

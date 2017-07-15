@@ -81,10 +81,10 @@ namespace AdvancedInput {
 			return rawDevice.buttons[index].state;
 		}
 
-		public float AxisValue (int index)
+		public float AxisValue (int index, bool invert)
 		{
 			AxisRecipe recipe = axisRecipes[index];
-			return recipe.Process (ref rawDevice.axes[index]);
+			return recipe.Process (ref rawDevice.axes[index], invert);
 		}
 
 		public string AxisName (int index)

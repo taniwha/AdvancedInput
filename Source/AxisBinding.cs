@@ -37,6 +37,7 @@ namespace AdvancedInput {
 		public Device device { get; private set; }
 		public IAxisBinding binding { get; private set; }
 		public float prevValue { get; private set; }
+		public bool invert { get; private set; }
 
 		public AxisBinding (Device dev, ConfigNode node)
 		{
@@ -47,14 +48,19 @@ namespace AdvancedInput {
 
 			binding = AI_FlightControl.GetAxisBinding (node);
 
+			bool b;
+			if (bool.TryParse (node.GetValue ("invert"), out b)) {
+				invert = b;
+			}
+
 			device = dev;
 
-			prevValue = device.AxisValue (index);
+			prevValue = device.AxisValue (index, invert);
 		}
 
 		public void Update ()
 		{
-			float value = device.AxisValue (index);
+			float value = device.AxisValue (index, invert);
 			bool updated = value != prevValue;
 			prevValue = value;
 			if (binding != null && !binding.locked) {
