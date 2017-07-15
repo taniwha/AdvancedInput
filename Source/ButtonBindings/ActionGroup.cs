@@ -80,6 +80,11 @@ namespace AdvancedInput.ButtonBindings {
 						Toggle ();
 					}
 					break;
+				case ButtonMode.edgetoggle:
+					if (edge) {
+						Toggle ();
+					}
+					break;
 				case ButtonMode.off:
 					if (state > 0 && edge) {
 						Off ();

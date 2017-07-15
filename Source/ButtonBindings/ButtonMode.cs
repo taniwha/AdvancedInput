@@ -28,6 +28,7 @@ namespace AdvancedInput.ButtonBindings {
 	{
 		hold,
 		toggle,
+		edgetoggle,
 		off,
 		on,
 		trigger,
