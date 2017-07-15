@@ -25,8 +25,14 @@ MOD_FILES := \
 	AxisBindings/Yaw.cs	\
 	AxisBindings/YawTrim.cs	\
 	AxisBindings/Z.cs	\
+	ButtonBindings/Abort.cs	\
+	ButtonBindings/ActionGroup.cs	\
+	ButtonBindings/Brake.cs	\
 	ButtonBindings/ButtonMode.cs	\
+	ButtonBindings/Gear.cs	\
+	ButtonBindings/Lights.cs	\
 	ButtonBindings/MainThrottleLock.cs	\
+	ButtonBindings/Stage.cs	\
 	ButtonBindings/TranslateBack.cs	\
 	ButtonBindings/TranslateDown.cs	\
 	ButtonBindings/TranslateForward.cs	\

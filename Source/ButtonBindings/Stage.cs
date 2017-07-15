@@ -24,25 +24,21 @@ using KSP.IO;
 
 namespace AdvancedInput.ButtonBindings {
 
-	public enum ButtonMode
+	public class AI_BB_Stage: AI_BB_ActionGroup
 	{
-		hold,
-		toggle,
-		off,
-		on,
-		trigger,
-	}
+		public override string name { get { return "Stage"; } }
+		public override ControlTypes lockMask { get { return ControlTypes.STAGING; } }
 
-	public static class ButtonMode_methods
-	{
-		public static ButtonMode Parse (string name)
+		public override void Trigger ()
 		{
-			if (name == null) {
-				name = String.Empty;
-			} else {
-				name = name.ToLower ();
-			}
-			return AI_Utils.ToEnum<ButtonMode> (name, ButtonMode.hold);
+			KSP.UI.Screens.StageManager.ActivateNextStage();
+			actionGroups.ToggleGroup(KSPActionGroup.Stage);
+		}
+
+		public AI_BB_Stage (AI_FlightControl fc, ConfigNode node) : base (fc, node)
+		{
+			group = KSPActionGroup.Stage;
+			mode = ButtonMode.trigger;
 		}
 	}
 }

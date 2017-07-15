@@ -24,25 +24,14 @@ using KSP.IO;
 
 namespace AdvancedInput.ButtonBindings {
 
-	public enum ButtonMode
+	public class AI_BB_Abort: AI_BB_ActionGroup
 	{
-		hold,
-		toggle,
-		off,
-		on,
-		trigger,
-	}
+		public override string name { get { return "Abort"; } }
+		public override ControlTypes lockMask { get { return ControlTypes.GROUP_ABORT; } }
 
-	public static class ButtonMode_methods
-	{
-		public static ButtonMode Parse (string name)
+		public AI_BB_Abort (AI_FlightControl fc, ConfigNode node) : base (fc, node)
 		{
-			if (name == null) {
-				name = String.Empty;
-			} else {
-				name = name.ToLower ();
-			}
-			return AI_Utils.ToEnum<ButtonMode> (name, ButtonMode.hold);
+			group = KSPActionGroup.Abort;
 		}
 	}
 }
