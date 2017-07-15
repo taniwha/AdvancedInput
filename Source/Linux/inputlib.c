@@ -197,6 +197,8 @@ check_device_input (void)
 	_timeout.tv_sec = 0;
 	_timeout.tv_usec = 0;
 
+	FD_ZERO (&fdset);
+
 	for (dev = devices; dev; dev = dev->next) {
 		FD_SET (dev->fd, &fdset);
 		if (dev->fd > maxfd) {
@@ -252,7 +254,8 @@ scan_devices (void)
 		if (check_input_device ("/dev/input", dirent->d_name) < 0) {
 			continue;
 		}
-		//printf("%s\n", dirent->d_name);
+		printf("%s\n", dirent->d_name);
 	}
+	closedir (dir);
 	return devices;
 }

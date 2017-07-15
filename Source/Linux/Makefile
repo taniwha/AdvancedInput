@@ -5,7 +5,7 @@ GAMEDATA	:= ${KSPDIR}/GameData
 MSCGAMEDATA := ${GAMEDATA}/${MODNAME}
 PLUGINDIR	:= ${MSCGAMEDATA}/Plugins
 
-CFLAGS = -Wall -Werror -fPIC
+CFLAGS = -Wall -Werror -fPIC -g
 CPPFLAGS = -MMD
 MCSFLAGS = -optimize -warnaserror -unsafe
 

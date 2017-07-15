@@ -246,7 +246,7 @@ namespace AdvancedInput {
 			GUILayout.BeginVertical (GUILayout.Width (180));
 
 			for (int i = 0; i < dev.num_axes; i++) {
-				DumpLine (dev.AxisName (i), dev.AxisValue (i));
+				DumpLine (dev.AxisName (i), dev.AxisValue (i, false));
 			}
 
 			GUILayout.EndVertical ();
