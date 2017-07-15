@@ -29,7 +29,7 @@ namespace AdvancedInput {
 	public class AI_TestWindow : MonoBehaviour
 	{
 		static Rect windowpos;
-		private static bool gui_enabled = true;
+		private static bool gui_enabled = false;
 		private static bool hide_ui;
 
 		static AI_TestWindow instance;

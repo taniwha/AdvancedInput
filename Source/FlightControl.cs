@@ -201,7 +201,7 @@ namespace AdvancedInput {
 			}
 			return binding;
 		}
-
+/*
 		void DumpLine (string name, float value)
 		{
 			GUILayout.BeginHorizontal ();
@@ -297,5 +297,6 @@ namespace AdvancedInput {
 				name + " " + ver,
 				GUILayout.Width (500));
 		}
+*/
 	}
 }
