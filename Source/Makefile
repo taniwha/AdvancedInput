@@ -32,6 +32,7 @@ MOD_FILES := \
 	ButtonBindings/Gear.cs	\
 	ButtonBindings/Lights.cs	\
 	ButtonBindings/MainThrottleLock.cs	\
+	ButtonBindings/SAS.cs	\
 	ButtonBindings/Stage.cs	\
 	ButtonBindings/TranslateBack.cs	\
 	ButtonBindings/TranslateDown.cs	\
