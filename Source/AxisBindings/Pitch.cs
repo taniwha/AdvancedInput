@@ -30,17 +30,13 @@ namespace AdvancedInput.AxisBindings {
 		public ControlTypes lockMask { get { return ControlTypes.PITCH; } }
 		public bool locked { get; set; }
 
-		AI_FlightControl flightControl;
-
 		public void Update (float value, bool updated)
 		{
-			flightControl.ctrlState.pitch = value;
+			AI_FlightControl.instance.ctrlState.pitch = value;
 		}
 
-		public AI_AB_Pitch (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_Pitch (ConfigNode node)
 		{
-			flightControl = fc;
-			// nothing to config?
 		}
 	}
 }

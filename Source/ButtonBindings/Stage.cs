@@ -35,7 +35,7 @@ namespace AdvancedInput.ButtonBindings {
 			actionGroups.ToggleGroup(KSPActionGroup.Stage);
 		}
 
-		public AI_BB_Stage (AI_FlightControl fc, ConfigNode node) : base (fc, node)
+		public AI_BB_Stage (ConfigNode node) : base (node)
 		{
 			group = KSPActionGroup.Stage;
 			mode = ButtonMode.trigger;

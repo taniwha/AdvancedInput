@@ -30,17 +30,13 @@ namespace AdvancedInput.AxisBindings {
 		public ControlTypes lockMask { get { return ControlTypes.LINEAR; } }
 		public bool locked { get; set; }
 
-		AI_FlightControl flightControl;
-
 		public void Update (float value, bool updated)
 		{
-			flightControl.ctrlState.Y = value;
+			AI_FlightControl.instance.ctrlState.Y = value;
 		}
 
-		public AI_AB_Y (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_Y (ConfigNode node)
 		{
-			flightControl = fc;
-			// nothing to config?
 		}
 	}
 }

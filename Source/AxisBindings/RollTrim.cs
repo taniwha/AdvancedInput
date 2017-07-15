@@ -35,7 +35,7 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.UpdateTrim (ref FlightInputHandler.state.rollTrim, value);
 		}
 
-		public AI_AB_RollTrim (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_RollTrim (ConfigNode node)
 		{
 		}
 	}

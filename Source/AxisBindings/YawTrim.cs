@@ -35,7 +35,7 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.UpdateTrim (ref FlightInputHandler.state.yawTrim, value);
 		}
 
-		public AI_AB_YawTrim (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_YawTrim (ConfigNode node)
 		{
 		}
 	}

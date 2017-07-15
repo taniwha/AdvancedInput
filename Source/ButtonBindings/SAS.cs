@@ -29,7 +29,7 @@ namespace AdvancedInput.ButtonBindings {
 		public override string name { get { return "SAS"; } }
 		public override ControlTypes lockMask { get { return ControlTypes.SAS; } }
 
-		public AI_BB_SAS (AI_FlightControl fc, ConfigNode node) : base (fc, node)
+		public AI_BB_SAS (ConfigNode node) : base (node)
 		{
 			group = KSPActionGroup.SAS;
 		}

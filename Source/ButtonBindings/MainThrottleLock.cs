@@ -30,36 +30,34 @@ namespace AdvancedInput.ButtonBindings {
 		public ControlTypes lockMask { get { return ControlTypes.None; } }
 		public bool locked { get; set; }
 
-		AI_FlightControl flightControl;
 		ButtonMode mode;
 
 		public void Update (int state, bool edge)
 		{
 			switch (mode) {
 				case ButtonMode.hold:
-					flightControl.mainThrottleLock = state != 0;
+					AI_FlightControl.instance.mainThrottleLock = state != 0;
 					break;
 				case ButtonMode.toggle:
 					if (state > 0 && edge) {
-						flightControl.mainThrottleLock ^= true;
+						AI_FlightControl.instance.mainThrottleLock ^= true;
 					}
 					break;
 				case ButtonMode.off:
 					if (state > 0 && edge) {
-						flightControl.mainThrottleLock = false;
+						AI_FlightControl.instance.mainThrottleLock = false;
 					}
 					break;
 				case ButtonMode.on:
 					if (state > 0 && edge) {
-						flightControl.mainThrottleLock = true;
+						AI_FlightControl.instance.mainThrottleLock = true;
 					}
 					break;
 			}
 		}
 
-		public AI_BB_MainThrottleLock (AI_FlightControl fc, ConfigNode node)
+		public AI_BB_MainThrottleLock (ConfigNode node)
 		{
-			flightControl = fc;
 			if (node != null) {
 				mode = ButtonMode_methods.Parse (node.GetValue ("mode"));
 			}

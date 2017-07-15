@@ -35,7 +35,7 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.UpdateTrim (ref FlightInputHandler.state.wheelSteerTrim, value);
 		}
 
-		public AI_AB_WheelSteerTrim (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_WheelSteerTrim (ConfigNode node)
 		{
 		}
 	}

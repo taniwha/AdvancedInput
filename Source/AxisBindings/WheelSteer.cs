@@ -30,17 +30,13 @@ namespace AdvancedInput.AxisBindings {
 		public ControlTypes lockMask { get { return ControlTypes.WHEEL_STEER; } }
 		public bool locked { get; set; }
 
-		AI_FlightControl flightControl;
-
 		public void Update (float value, bool updated)
 		{
-			flightControl.ctrlState.wheelSteer = value;
+			AI_FlightControl.instance.ctrlState.wheelSteer = value;
 		}
 
-		public AI_AB_WheelSteer (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_WheelSteer (ConfigNode node)
 		{
-			flightControl = fc;
-			// nothing to config?
 		}
 	}
 }

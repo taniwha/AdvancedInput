@@ -37,7 +37,7 @@ namespace AdvancedInput.AxisBindings {
 			FlightInputHandler.state.mainThrottle = throttle;
 		}
 
-		public AI_AB_ThrottleIncrement (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_ThrottleIncrement (ConfigNode node)
 		{
 		}
 	}

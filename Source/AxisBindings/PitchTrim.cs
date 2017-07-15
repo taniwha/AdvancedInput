@@ -35,7 +35,7 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.UpdateTrim (ref FlightInputHandler.state.pitchTrim, value);
 		}
 
-		public AI_AB_PitchTrim (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_PitchTrim (ConfigNode node)
 		{
 		}
 	}

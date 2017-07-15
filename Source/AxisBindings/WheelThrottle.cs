@@ -30,19 +30,15 @@ namespace AdvancedInput.AxisBindings {
 		public ControlTypes lockMask { get { return ControlTypes.WHEEL_THROTTLE; } }
 		public bool locked { get; set; }
 
-		AI_FlightControl flightControl;
-
 		public void Update (float value, bool updated)
 		{
-			if (updated && !flightControl.wheelThrottleLock) {
-				flightControl.ctrlState.wheelThrottle = value;
+			if (updated && !AI_FlightControl.instance.wheelThrottleLock) {
+				AI_FlightControl.instance.ctrlState.wheelThrottle = value;
 			}
 		}
 
-		public AI_AB_WheelThrottle (AI_FlightControl fc, ConfigNode node)
+		public AI_AB_WheelThrottle (ConfigNode node)
 		{
-			flightControl = fc;
-			// nothing to config?
 		}
 	}
 }

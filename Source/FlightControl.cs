@@ -56,8 +56,8 @@ namespace AdvancedInput {
 		static void DiscoverAxisBindings ()
 		{
 			axisBindings = new Dictionary <string, ConstructorInfo> ();
-			var modules = AssemblyLoader.GetModulesImplementingInterface<IAxisBinding> (new Type[] {typeof (AI_FlightControl), typeof (ConfigNode)});
-			var parms = new object [] {null, null};
+			var modules = AssemblyLoader.GetModulesImplementingInterface<IAxisBinding> (new Type[] {typeof (ConfigNode)});
+			var parms = new object [] {null};
 			foreach (var mod in modules) {
 				// create a dummy module in order to get its name
 				var ab = (IAxisBinding) mod.Invoke (parms);
@@ -69,8 +69,8 @@ namespace AdvancedInput {
 		static void DiscoverButtonBindings ()
 		{
 			buttonBindings = new Dictionary <string, ConstructorInfo> ();
-			var modules = AssemblyLoader.GetModulesImplementingInterface<IButtonBinding> (new Type[] {typeof (AI_FlightControl), typeof (ConfigNode)});
-			var parms = new object [] {null, null};
+			var modules = AssemblyLoader.GetModulesImplementingInterface<IButtonBinding> (new Type[] {typeof (ConfigNode)});
+			var parms = new object [] {null};
 			foreach (var mod in modules) {
 				// create a dummy module in order to get its name
 				var bb = (IButtonBinding) mod.Invoke (parms);
@@ -184,8 +184,11 @@ namespace AdvancedInput {
 			ConstructorInfo module;
 			IAxisBinding binding = null;
 			if (name != null && axisBindings.TryGetValue (name, out module)) {
-				var parms = new object [] {instance, node};
+				var parms = new object [] {node};
 				binding = (IAxisBinding) module.Invoke (parms);
+			}
+			if (binding == null) {
+				Debug.LogError (String.Format ("[AdvancedInput] axis binding '{0}' not found", name));
 			}
 			return binding;
 		}
@@ -196,8 +199,11 @@ namespace AdvancedInput {
 			ConstructorInfo module;
 			IButtonBinding binding = null;
 			if (name != null && buttonBindings.TryGetValue (name, out module)) {
-				var parms = new object [] {instance, node};
+				var parms = new object [] {node};
 				binding = (IButtonBinding) module.Invoke (parms);
+			}
+			if (binding == null) {
+				Debug.LogError (String.Format ("[AdvancedInput] button binding '{0}' not found", name));
 			}
 			return binding;
 		}

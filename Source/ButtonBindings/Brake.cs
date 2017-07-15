@@ -29,7 +29,7 @@ namespace AdvancedInput.ButtonBindings {
 		public override string name { get { return "Brakes"; } }
 		public override ControlTypes lockMask { get { return ControlTypes.GROUP_BRAKES; } }
 
-		public AI_BB_Brakes (AI_FlightControl fc, ConfigNode node) : base (fc, node)
+		public AI_BB_Brakes (ConfigNode node) : base (node)
 		{
 			group = KSPActionGroup.Brakes;
 		}

@@ -37,7 +37,7 @@ namespace AdvancedInput.ButtonBindings {
 			}
 		}
 
-		public AI_BB_TranslateUp (AI_FlightControl fc, ConfigNode node)
+		public AI_BB_TranslateUp (ConfigNode node)
 		{
 		}
 	}

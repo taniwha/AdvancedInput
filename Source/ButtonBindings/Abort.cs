@@ -29,7 +29,7 @@ namespace AdvancedInput.ButtonBindings {
 		public override string name { get { return "Abort"; } }
 		public override ControlTypes lockMask { get { return ControlTypes.GROUP_ABORT; } }
 
-		public AI_BB_Abort (AI_FlightControl fc, ConfigNode node) : base (fc, node)
+		public AI_BB_Abort (ConfigNode node) : base (node)
 		{
 			group = KSPActionGroup.Abort;
 		}

@@ -103,7 +103,7 @@ namespace AdvancedInput.ButtonBindings {
 			}
 		}
 
-		public AI_BB_ActionGroup (AI_FlightControl fc, ConfigNode node)
+		public AI_BB_ActionGroup (ConfigNode node)
 		{
 			if (node != null) {
 				mode = ButtonMode_methods.Parse (node.GetValue ("mode"));

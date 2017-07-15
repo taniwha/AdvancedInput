@@ -29,7 +29,7 @@ namespace AdvancedInput.ButtonBindings {
 		public override string name { get { return "Lights"; } }
 		public override ControlTypes lockMask { get { return ControlTypes.GROUP_LIGHTS; } }
 
-		public AI_BB_Lights (AI_FlightControl fc, ConfigNode node) : base (fc, node)
+		public AI_BB_Lights (ConfigNode node) : base (node)
 		{
 			group = KSPActionGroup.Light;
 		}
