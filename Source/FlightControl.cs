@@ -141,25 +141,23 @@ namespace AdvancedInput {
 			}
 		}
 
+		float ClampedAdd (float a, float b)
+		{
+			return Mathf.Clamp (a + b, -1f, 1f);
+		}
+
 		void OnFlyByWire (FlightCtrlState state)
 		{
 			InputLib.Device.CheckInput ();
 			for (int i = devices.Count; i-- > 0; ) {
 				devices[i].CheckInput ();
 			}
-			if (!ctrlState.isIdle) {
-				state.roll = ctrlState.roll + state.rollTrim;
-				state.pitch = ctrlState.pitch + state.pitchTrim;
-				state.yaw = ctrlState.yaw + state.yawTrim;
-				state.wheelSteer = ctrlState.wheelSteer + state.wheelSteerTrim;
-			}
 
-			/* it seems these have no affect
-			state.killRot ^= ctrlState.killRot;
-			state.gearUp ^= ctrlState.gearUp;
-			state.gearDown ^= ctrlState.gearDown;
-			state.headlight ^= ctrlState.headlight;
-			*/
+			state.roll = ClampedAdd (state.roll, ctrlState.roll);
+			state.pitch = ClampedAdd (state.pitch, ctrlState.pitch);
+			state.yaw = ClampedAdd (state.yaw, ctrlState.yaw);
+			state.wheelSteer = ClampedAdd (state.wheelSteer,
+										   ctrlState.wheelSteer);
 
 			if (prevMainThrottle != state.mainThrottle) {
 				prevMainThrottle = state.mainThrottle;
