@@ -100,10 +100,13 @@ namespace AdvancedInput {
 			instance = null;
 			GameEvents.onVesselChange.Remove (OnVesselChange);
 			GameEvents.onInputLocksModified.Remove (OnInputLocksModified);
+			DisconnectControlUpdate ();
+			InputLib.Device.Close ();
 		}
 
 		void Start ()
 		{
+			InputLib.Device.Scan ();
 			foreach (var dev in InputLib.Device.devices) {
 				devices.Add (new Device (dev));
 			}
@@ -111,12 +114,16 @@ namespace AdvancedInput {
 
 		Vessel currentVessel;
 
-		void OnVesselChange(Vessel vessel)
+		void DisconnectControlUpdate ()
 		{
 			if (currentVessel != null) {
 				currentVessel.OnPreAutopilotUpdate -= ControlUpdate;
 				currentVessel.OnPostAutopilotUpdate -= OverrideSAS;
 			}
+		}
+
+		void ConnectControlUpdate (Vessel vessel)
+		{
 			currentVessel = vessel;
 			if (vessel != null) {
 				vessel.OnPreAutopilotUpdate += ControlUpdate;
@@ -129,6 +136,13 @@ namespace AdvancedInput {
 			 * vessel.OnPostAutopilotUpdate;
 			 * vessel.OnFlyByWire;
 			 */
+		}
+
+		void OnVesselChange(Vessel vessel)
+		{
+			Debug.LogFormat ("[AI_FlightControl] OnVesselChange {0}", GetInstanceID ());
+			DisconnectControlUpdate ();
+			ConnectControlUpdate (vessel);
 		}
 
 		const string appLock = "flightDriver_ApplicationFocus";

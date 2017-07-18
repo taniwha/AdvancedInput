@@ -220,17 +220,42 @@ check_device_input (void)
 	return 1;
 }
 
+void
+close_devices (void)
+{
+	while (devices) {
+		device_t   *dev = devices;
+		devices = devices->next;
+		close (dev->fd);
+		free (dev->button_map);
+		if (dev->buttons) {
+			free (dev->buttons);
+		}
+		free (dev->axis_map);
+		if (dev->axes) {
+			free (dev->axes);
+		}
+		free (dev->name);
+		free (dev->path);
+		free (dev);
+	}
+}
+
 static int
 check_input_device (const char *path, const char *name)
 {
 	int         plen = strlen (path);
 	int         nlen = strlen (name);
 	char       *devname = malloc (plen + nlen + 2);
+	int         ret;
+
 	strcpy (devname, path);
 	devname[plen] = '/';
 	strcpy (devname + plen + 1, name);
 	//puts (devname);
-	return check_device (devname);
+	ret = check_device (devname);
+	free (devname);
+	return ret;
 }
 
 device_t *

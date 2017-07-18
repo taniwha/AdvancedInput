@@ -24,6 +24,24 @@ using UnityEngine;
 using KSP.IO;
 
 namespace AdvancedInput {
+	[KSPAddon(KSPAddon.Startup.Instantly, true)]
+	public class AdvancedInput : MonoBehaviour
+	{
+		public static AdvancedInput instance;
+
+		void Awake ()
+		{
+			instance = this;
+			GameObject.DontDestroyOnLoad(this);
+			InputLib.Device.openlib ();
+		}
+
+		void OnDestroy ()
+		{
+			instance = this;
+			InputLib.Device.closelib ();
+		}
+	}
 
 	[KSPAddon (KSPAddon.Startup.SpaceCentre, false)]
 	public class AI_TestWindow : MonoBehaviour
@@ -80,7 +98,6 @@ namespace AdvancedInput {
 			instance = this;
 			GameEvents.onHideUI.Add (onHideUI);
 			GameEvents.onShowUI.Add (onShowUI);
-			InputLib.Device.open();
 		}
 
 		void OnDestroy ()
@@ -88,7 +105,7 @@ namespace AdvancedInput {
 			instance = null;
 			GameEvents.onHideUI.Remove (onHideUI);
 			GameEvents.onShowUI.Remove (onShowUI);
-			InputLib.Device.close();
+			InputLib.Device.Close ();
 		}
 
 		InputLib.Device dev;

@@ -50,6 +50,9 @@ static class InputLibWrapper
 	public static extern IntPtr scan_devices ();
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
+	public static extern void close_devices ();
+
+	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
 	public static extern bool check_device_input ();
 }
 
@@ -65,6 +68,7 @@ public class Device {
 	public static List<Device> devices { get; private set; }
 
 	private IntPtr self, next;
+	private GCHandle buttons_handle, axes_handle;
 
 	Device (IntPtr devptr)
 	{
@@ -87,8 +91,8 @@ public class Device {
 					IntPtr bptr = new IntPtr(dev->buttons.ToInt64() + i * bsize);
 					buttons[i] = (Button) Marshal.PtrToStructure (bptr, typeof(Button));
 				}
-				var handle = GCHandle.Alloc(buttons, GCHandleType.Pinned);
-				dev->buttons = handle.AddrOfPinnedObject();
+				buttons_handle = GCHandle.Alloc(buttons, GCHandleType.Pinned);
+				dev->buttons = buttons_handle.AddrOfPinnedObject();
 			}
 
 			int asize = Marshal.SizeOf (typeof(Axis));
@@ -97,8 +101,8 @@ public class Device {
 					IntPtr aptr = new IntPtr (dev->axes.ToInt64() + i * asize);
 					axes[i] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
 				}
-				var handle = GCHandle.Alloc(axes, GCHandleType.Pinned);
-				dev->axes = handle.AddrOfPinnedObject();
+				axes_handle = GCHandle.Alloc(axes, GCHandleType.Pinned);
+				dev->axes = axes_handle.AddrOfPinnedObject();
 			}
 		}
 	}
@@ -111,7 +115,7 @@ public class Device {
 	static extern int dlclose(IntPtr handle);
 	static IntPtr handle;
 	   
-	public static void open ()
+	public static void openlib ()
 	{
 		string dll = Assembly.GetExecutingAssembly().Location;
 		string dir = System.IO.Path.GetDirectoryName(dll);
@@ -119,11 +123,31 @@ public class Device {
 		handle = dlopen(libPath, RTLD_NOW|RTLD_GLOBAL);
 	}
 
-	public static void close ()
+	public static void closelib ()
 	{
 		dlclose (handle);
 	}
 
+	void close_device ()
+	{
+		unsafe {
+			WrappedDevice *dev = (WrappedDevice *) self.ToPointer ();
+			dev->buttons = IntPtr.Zero;
+			dev->axes = IntPtr.Zero;
+			buttons_handle.Free ();
+			axes_handle.Free ();
+		}
+	}
+
+	public static void Close ()
+	{
+		//Debug.LogFormat ("[InputLib.Device] Close");
+		foreach (var dev in devices) {
+			dev.close_device ();
+		}
+		devices = null;
+		InputLibWrapper.close_devices ();
+	}
 
 	public static void Scan ()
 	{
