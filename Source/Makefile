@@ -10,6 +10,7 @@ TARGETS		:= bin/${MODNAME}.dll
 MOD_FILES := \
     Assembly/AssemblyInfo.cs	\
 	Assembly/VersionReport.cs	\
+	AxisBindings/LinearBrake.cs	\
 	AxisBindings/MainThrottle.cs	\
 	AxisBindings/Pitch.cs	\
 	AxisBindings/PitchTrim.cs	\

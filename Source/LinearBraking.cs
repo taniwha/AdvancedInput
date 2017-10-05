@@ -32,9 +32,11 @@ namespace AdvancedInput {
 
 		float sideEpsilon = 0.05f;	// 5cm slop should be good enough
 
-		// center braking is the average of left and right braking
-		float leftBraking;
-		float rightBraking;
+		// center braking is the average of left and right braking, but only
+		// if both are non-zero FIXME is this a good idea, or should it always
+		// be the average and any central wheels have their brakes disabled?
+		public float leftBraking;
+		public float rightBraking;
 
 		public override Activation GetActivation ()
 		{
@@ -97,7 +99,12 @@ namespace AdvancedInput {
 				// brake "lock" is applied, so let it override
 				return;
 			}
-			float centerBraking = (leftBraking + rightBraking) / 2;
+
+			float centerBraking = 0;
+			if (leftBraking > 0 && rightBraking > 0) {
+				centerBraking = (leftBraking + rightBraking) / 2;
+			}
+
 			for (int i = leftBrakes.Count; i-- > 0; ) {
 				UpdateBrakeInput (leftBrakes[i], leftBraking);
 			}
@@ -112,6 +119,16 @@ namespace AdvancedInput {
 		public void UpdateBraking (float braking)
 		{
 			leftBraking = rightBraking = braking;
+		}
+
+		public void UpdateLeftBraking (float braking)
+		{
+			leftBraking = braking;
+		}
+
+		public void UpdateRightBraking (float braking)
+		{
+			rightBraking = braking;
 		}
 
 		public void UpdateBraking (float leftBraking, float rightBraking)

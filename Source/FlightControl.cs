@@ -42,6 +42,9 @@ namespace AdvancedInput {
 		public bool mainThrottleLock;
 		public bool wheelThrottleLock;
 
+		// so bindings can register without worrying about deregistering
+		public EventData<Vessel> onVesselChange;
+
 		static Dictionary <string, ConstructorInfo> axisBindings;
 		static Dictionary <string, ConstructorInfo> buttonBindings;
 
@@ -87,6 +90,7 @@ namespace AdvancedInput {
 				DiscoverButtonBindings ();
 			}
 			instance = this;
+			onVesselChange = new EventData<Vessel>("onVesselChange");
 			GameEvents.onVesselChange.Add (OnVesselChange);
 			GameEvents.onInputLocksModified.Add (OnInputLocksModified);
 			ctrlState = new FlightCtrlState ();
@@ -106,6 +110,7 @@ namespace AdvancedInput {
 
 		void Start ()
 		{
+			Debug.LogFormat ("[AI_FlightControl] Start {0}", GetInstanceID ());
 			InputLib.Device.Scan ();
 			foreach (var dev in InputLib.Device.devices) {
 				devices.Add (new Device (dev));
@@ -143,6 +148,7 @@ namespace AdvancedInput {
 			Debug.LogFormat ("[AI_FlightControl] OnVesselChange {0}", GetInstanceID ());
 			DisconnectControlUpdate ();
 			ConnectControlUpdate (vessel);
+			onVesselChange.Fire (vessel);
 		}
 
 		const string appLock = "flightDriver_ApplicationFocus";
