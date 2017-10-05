@@ -50,6 +50,7 @@ MOD_FILES := \
 	Device.cs					\
 	DeviceNamesContainer.cs		\
 	FlightControl.cs			\
+	LinearBraking.cs			\
 	Utils.cs					\
 	$e
 
