@@ -14,7 +14,10 @@ ZIP			:= zip
 
 DATA := \
 	deviceconfig.cfg \
-	saitek_x52.cfg	\
+	saitek_x52.cfg \
+	thrustmaster_t16000m.cfg \
+	thrustmaster_twcs_throttle.cfg \
+	xbox_360_wireless.cfg \
 	$e
 
 all: 
