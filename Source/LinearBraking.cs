@@ -35,8 +35,9 @@ namespace AdvancedInput {
 		// center braking is the average of left and right braking, but only
 		// if both are non-zero FIXME is this a good idea, or should it always
 		// be the average and any central wheels have their brakes disabled?
-		public float leftBraking;
-		public float rightBraking;
+		float leftBraking;
+		float rightBraking;
+		bool updateBraking;
 
 		public override Activation GetActivation ()
 		{
@@ -45,6 +46,7 @@ namespace AdvancedInput {
 
 		void AllocateBrake (Part part, ModuleWheelBrakes brake)
 		{
+			enabled = true; // found at least one brake, so run FixedUpdate
 			Transform reference = vessel.ReferenceTransform;
 
 			Vector3 offset = part.transform.position - reference.position;
@@ -58,11 +60,13 @@ namespace AdvancedInput {
 			}
 		}
 
-		public override void OnLoadVessel ()
+		void ScanBrakes ()
 		{
 			leftBrakes = new List<ModuleWheelBrakes> ();
 			rightBrakes = new List<ModuleWheelBrakes> ();
 			centerBrakes = new List<ModuleWheelBrakes> ();
+
+			enabled = false;	// don't run FixedUpdate if no brakes found
 
 			for (int i = vessel.parts.Count; i-- > 0; ) {
 				Part p = vessel.parts[i];
@@ -71,6 +75,29 @@ namespace AdvancedInput {
 					AllocateBrake (p, brakes[j]);
 				}
 			}
+			updateBraking = true;
+		}
+
+		void onVesselWasModified (Vessel v)
+		{
+			if (v == vessel) {
+				ScanBrakes ();
+			}
+		}
+
+		protected override void OnAwake ()
+		{
+			GameEvents.onVesselWasModified.Add (onVesselWasModified);
+		}
+
+		void OnDestroy ()
+		{
+			GameEvents.onVesselWasModified.Remove (onVesselWasModified);
+		}
+
+		public override void OnLoadVessel ()
+		{
+			ScanBrakes ();
 		}
 
 		public override void OnUnloadVessel ()
@@ -97,8 +124,17 @@ namespace AdvancedInput {
 		{
 			if (vessel.ActionGroups[KSPActionGroup.Brakes]) {
 				// brake "lock" is applied, so let it override
+				// ensure linear break is applied when "lock" is removed
+				updateBraking = true;
 				return;
 			}
+
+			if (!updateBraking) {
+				// no change to the braking inputs
+				return;
+			}
+
+			updateBraking = false;
 
 			float centerBraking = 0;
 			if (leftBraking > 0 && rightBraking > 0) {
@@ -119,22 +155,26 @@ namespace AdvancedInput {
 		public void UpdateBraking (float braking)
 		{
 			leftBraking = rightBraking = braking;
+			updateBraking = true;
 		}
 
 		public void UpdateLeftBraking (float braking)
 		{
 			leftBraking = braking;
+			updateBraking = true;
 		}
 
 		public void UpdateRightBraking (float braking)
 		{
 			rightBraking = braking;
+			updateBraking = true;
 		}
 
 		public void UpdateBraking (float leftBraking, float rightBraking)
 		{
 			this.leftBraking = leftBraking;
 			this.rightBraking = rightBraking;
+			updateBraking = true;
 		}
 	}
 }
