@@ -45,6 +45,7 @@ MOD_FILES := \
 	Linux/InputLib.cs			\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
+	AxisMonitor.cs				\
 	AxisRecipe.cs				\
 	ButtonBinding.cs			\
 	Data.cs						\
@@ -52,6 +53,7 @@ MOD_FILES := \
 	DeviceNamesContainer.cs		\
 	FlightControl.cs			\
 	LinearBraking.cs			\
+	Toolbar.cs					\
 	Utils.cs					\
 	$e
 

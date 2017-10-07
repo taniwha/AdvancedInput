@@ -35,6 +35,15 @@ namespace AdvancedInput {
 		public int num_axes { get { return rawDevice.num_axes; } }
 		public int num_buttons { get { return rawDevice.num_buttons; } }
 		public string name { get { return rawDevice.name; } }
+		public string shortName
+		{
+			get {
+				if (devNames != null) {
+					return devNames.shortName;
+				}
+				return name;
+			}
+		}
 
 		DeviceNamesContainer devNames;
 
@@ -79,6 +88,11 @@ namespace AdvancedInput {
 		public int ButtonState (int index)
 		{
 			return rawDevice.buttons[index].state;
+		}
+
+		public int RawAxis (int index)
+		{
+			return rawDevice.axes[index].value;
 		}
 
 		public float AxisValue (int index, bool invert)

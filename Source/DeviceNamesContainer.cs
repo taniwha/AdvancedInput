@@ -26,12 +26,18 @@ namespace AdvancedInput {
 	public class DeviceNamesContainer
 	{
 		public string name { get; private set; }
+		public string shortName { get; private set; }
 		string []axes;
 		string []buttons;
 
 		public DeviceNamesContainer (ConfigNode node)
 		{
 			name = node.GetValue ("name");
+			if (node.HasValue ("shortName")) {
+				shortName = node.GetValue("shortName");
+			} else {
+				shortName = name;
+			}
 			axes = node.GetValues ("axis");
 			buttons = node.GetValues ("button");
 			Debug.Log (name);

@@ -48,7 +48,7 @@ namespace AdvancedInput {
 		static Dictionary <string, ConstructorInfo> axisBindings;
 		static Dictionary <string, ConstructorInfo> buttonBindings;
 
-		List<Device> devices;
+		public List<Device> devices { get; private set; }
 
 		public static AI_FlightControl instance { get; private set; }
 
