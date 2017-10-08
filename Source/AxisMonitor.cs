@@ -159,7 +159,7 @@ namespace AdvancedInput {
 				int axis = SelectAxis (dev);
 				if (axis >= 0) {
 					DumpLine ("raw", dev.RawAxis (axis));
-					DumpLine ("cooked", dev.AxisValue (axis, false));
+					//DumpLine ("cooked", dev.AxisValue (axis, false));
 				}
 			}
 			string name = "Advanced Input";

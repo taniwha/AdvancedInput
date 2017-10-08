@@ -34,11 +34,11 @@ namespace AdvancedInput {
 	public class ButtonBinding
 	{
 		public int index { get; private set; }
-		public Device device { get; private set; }
+		public BindingSet bindingSet { get; private set; }
 		public IButtonBinding binding { get; private set; }
 		public int prevState { get; private set; }
 
-		public ButtonBinding (Device dev, ConfigNode node)
+		public ButtonBinding (BindingSet bs, ConfigNode node)
 		{
 			int ind;
 			if (int.TryParse (node.GetValue ("index"), out ind)) {
@@ -47,14 +47,14 @@ namespace AdvancedInput {
 
 			binding = AI_FlightControl.GetButtonBinding (node);
 
-			device = dev;
+			bindingSet = bs;
 
-			prevState = device.ButtonState (index);
+			prevState = bindingSet.ButtonState (index);
 		}
 
 		public void Update ()
 		{
-			int state = device.ButtonState (index);
+			int state = bindingSet.ButtonState (index);
 			bool edge = state != prevState;
 			prevState = state;
 			if (binding != null && !binding.locked) {

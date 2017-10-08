@@ -25,12 +25,7 @@ namespace AdvancedInput {
 
 	public class Device
 	{
-		public List<AxisBinding> axisBindings { get; private set; }
-		public List<ButtonBinding> buttonBindings { get; private set; }
-
-		AxisRecipe[] axisRecipes;
-
-		InputLib.Device rawDevice;
+		public InputLib.Device rawDevice { get; private set; }
 
 		public int num_axes { get { return rawDevice.num_axes; } }
 		public int num_buttons { get { return rawDevice.num_buttons; } }
@@ -45,23 +40,20 @@ namespace AdvancedInput {
 			}
 		}
 
+		Dictionary<string, BindingSet> bindingSets;
+		List<BindingSet> activeBindingSets;
+		BindingSet defaultBindings;
+
 		DeviceNamesContainer devNames;
 
 		void ParseConfig (ConfigNode node)
 		{
+			defaultBindings = new BindingSet (this, node);
 			foreach (ConfigNode n in node.nodes) {
 				switch (n.name) {
-					case "AxisRecipe":
-						var ar = new AxisRecipe (n);
-						axisRecipes[ar.axis] = ar;
-						break;
-					case "AxisBinding":
-						var ab = new AxisBinding (this, n);
-						axisBindings.Add (ab);
-						break;
-					case "ButtonBinding":
-						var bb = new ButtonBinding (this, n);
-						buttonBindings.Add (bb);
+					case "BindingSet":
+						var bs = new BindingSet (this, n);
+						bindingSets[bs.name] = bs;
 						break;
 				}
 			}
@@ -69,13 +61,8 @@ namespace AdvancedInput {
 
 		public Device (InputLib.Device dev)
 		{
-			axisBindings = new List<AxisBinding> ();
-			buttonBindings = new List<ButtonBinding> ();
-			axisRecipes = new AxisRecipe[dev.axes.Length];
-			for (int i = 0; i < axisRecipes.Length; i++) {
-				axisRecipes[i] = new AxisRecipe ();
-			}
-
+			bindingSets = new Dictionary<string, BindingSet> ();
+			activeBindingSets = new List<BindingSet> ();
 			rawDevice = dev;
 
 			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
@@ -85,20 +72,9 @@ namespace AdvancedInput {
 			}
 		}
 
-		public int ButtonState (int index)
-		{
-			return rawDevice.buttons[index].state;
-		}
-
 		public int RawAxis (int index)
 		{
 			return rawDevice.axes[index].value;
-		}
-
-		public float AxisValue (int index, bool invert)
-		{
-			AxisRecipe recipe = axisRecipes[index];
-			return recipe.Process (ref rawDevice.axes[index], invert);
 		}
 
 		public string AxisName (int index)
@@ -121,22 +97,19 @@ namespace AdvancedInput {
 
 		public void CheckInput ()
 		{
-			for (int i = axisBindings.Count; i-- > 0; ) {
-				axisBindings[i].Update ();
+			for (int i = activeBindingSets.Count; i-- > 0; ) {
+				activeBindingSets[i].CheckInput ();
 			}
-			for (int i = buttonBindings.Count; i-- > 0; ) {
-				buttonBindings[i].Update ();
-			}
+			defaultBindings.CheckInput ();
 		}
 
 		public void UpdateInputLock (ulong mask)
 		{
-			for (int i = axisBindings.Count; i-- > 0; ) {
-				axisBindings[i].UpdateInputLock (mask);
+			var sets = bindingSets.Values;
+			foreach (var bs in sets) {
+				bs.UpdateInputLock (mask);
 			}
-			for (int i = buttonBindings.Count; i-- > 0; ) {
-				buttonBindings[i].UpdateInputLock (mask);
-			}
+			defaultBindings.UpdateInputLock (mask);
 		}
 	}
 }

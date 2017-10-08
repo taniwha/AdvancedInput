@@ -47,6 +47,7 @@ MOD_FILES := \
 	AxisBinding.cs				\
 	AxisMonitor.cs				\
 	AxisRecipe.cs				\
+	BindingSet.cs				\
 	ButtonBinding.cs			\
 	Data.cs						\
 	Device.cs					\

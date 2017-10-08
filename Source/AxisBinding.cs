@@ -34,12 +34,12 @@ namespace AdvancedInput {
 	public class AxisBinding
 	{
 		public int index { get; private set; }
-		public Device device { get; private set; }
+		public BindingSet bindingSet { get; private set; }
 		public IAxisBinding binding { get; private set; }
 		public float prevValue { get; private set; }
 		public bool invert { get; private set; }
 
-		public AxisBinding (Device dev, ConfigNode node)
+		public AxisBinding (BindingSet bs, ConfigNode node)
 		{
 			int ind;
 			if (int.TryParse (node.GetValue ("index"), out ind)) {
@@ -53,14 +53,14 @@ namespace AdvancedInput {
 				invert = b;
 			}
 
-			device = dev;
+			bindingSet = bs;
 
-			prevValue = device.AxisValue (index, invert);
+			prevValue = bindingSet.AxisValue (index, invert);
 		}
 
 		public void Update ()
 		{
-			float value = device.AxisValue (index, invert);
+			float value = bindingSet.AxisValue (index, invert);
 			bool updated = value != prevValue;
 			prevValue = value;
 			if (binding != null && !binding.locked) {
