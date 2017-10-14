@@ -16,7 +16,7 @@ lib_objects = $(patsubst %.c, %.o, $(lib_sources))
 lib = libinputlib.so
 
 sources = ${lib_sources}
-dependencies = $(patsubst %.c, %.d, sources)
+dependencies = $(patsubst %.c, %.d, ${sources})
 
 %.o: %.c
 	gcc -c $(CPPFLAGS) $(CFLAGS) -o $@ $<
