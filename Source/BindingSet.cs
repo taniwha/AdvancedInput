@@ -31,7 +31,7 @@ namespace AdvancedInput {
 		AxisRecipe[] axisRecipes;
 		static AxisRecipe defaultRecipe;
 
-		InputLib.Device rawDevice;
+		InputLibWrapper.Device rawDevice;
 
 		public string name { get; private set; }
 

@@ -3,7 +3,9 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace AdvancedInput.InputLib {
+using UnityEngine;
+
+namespace AdvancedInput.InputLibWrapper {
 
 [StructLayout(LayoutKind.Sequential)]
 struct WrappedDevice
@@ -41,19 +43,119 @@ public struct Axis
 	public int min, max;
 }
 
-static class InputLibWrapper
+static class ilw
 {
-	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
-	public static extern int check_device (string path);
+	//[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	public delegate void Callback (IntPtr dev);
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
-	public static extern IntPtr scan_devices ();
+	public static extern int inputlib_init (Callback addDev, Callback remDev);
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
-	public static extern void close_devices ();
+	public static extern void inputlib_close ();
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
-	public static extern bool check_device_input ();
+	public static extern bool inputlib_check_input ();
+}
+
+public class InputLibLoader
+{
+	const int RTLD_NOW = 2; // for dlopen's flags
+	const int RTLD_GLOBAL = 8;
+	[DllImport("libdl.so", CallingConvention = CallingConvention.Cdecl)]
+	static extern IntPtr dlopen(string filename, int flags);
+	[DllImport("libdl.so", CallingConvention = CallingConvention.Cdecl)]
+	static extern int dlclose(IntPtr handle);
+	static IntPtr handle;
+
+	public static void openlib ()
+	{
+		string dll = Assembly.GetExecutingAssembly().Location;
+		string dir = System.IO.Path.GetDirectoryName(dll);
+		string libPath = dir + "/" + "libinputlib.so";
+		handle = dlopen(libPath, RTLD_NOW|RTLD_GLOBAL);
+		Debug.LogFormat ("[InputLib] openlib: {0} {1}", libPath, handle);
+	}
+
+	public static void closelib ()
+	{
+		dlclose (handle);
+	}
+}
+
+public class InputLib
+{
+	static bool initialized;
+
+	public static List<Device> devices { get; private set; }
+	public delegate void Callback (Device dev);
+	public static Callback DeviceAdded = (Device dev) => { };
+	public static Callback DeviceRemoved = (Device dev) => { };
+
+	static void addDevice (IntPtr devPtr)
+	{
+		try {
+			Device dev = new Device (devPtr);
+			devices.Add (dev);
+			DeviceAdded (dev);
+		} catch (Exception e) {
+			Debug.LogFormat ("Exception handling addDevice\n{0}", e);
+			throw;
+		}
+	}
+
+	static void removeDevice (IntPtr devPtr)
+	{
+		try {
+			string path = Device.DevicePath (devPtr);
+			for (int i = devices.Count; i-- > 0; ) {
+				Device dev = devices[i];
+				if (dev.path == path) {
+					devices.RemoveAt (i);
+					DeviceRemoved (dev);
+					dev.close_device ();
+				}
+			}
+		} catch (Exception e) {
+			Debug.LogFormat ("Exception handling removeDevice\n{0}", e);
+			throw;
+		}
+	}
+
+	static ilw.Callback addDev;
+	static ilw.Callback remDev;
+
+	public static bool Init ()
+	{
+		devices = new List<Device> ();
+		addDev = addDevice;
+		remDev = removeDevice;
+		int res = ilw.inputlib_init (addDev, remDev);
+		if (res < 0) {
+			//FIXME should throw an error?
+			return false;
+		}
+		initialized = true;
+		return true;
+	}
+
+	public static void Close ()
+	{
+		if (!initialized) {
+			//FIXME should throw an error?
+			return;
+		}
+		ilw.inputlib_close ();
+	}
+
+	public static bool CheckInput ()
+	{
+		if (!initialized) {
+			//FIXME should throw an error?
+			return false;
+		}
+		return ilw.inputlib_check_input ();
+	}
 }
 
 public class Device {
@@ -65,18 +167,23 @@ public class Device {
 	public Axis[] axes		{ get; private set; }
 	public int event_count	{ get; private set; }
 
-	public static List<Device> devices { get; private set; }
+	private IntPtr self;
 
-	private IntPtr self, next;
 	private GCHandle buttons_handle, axes_handle;
 
-	Device (IntPtr devptr)
+	internal static string DevicePath (IntPtr devptr)
+	{
+		unsafe {
+			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
+			return Marshal.PtrToStringAnsi(dev->path);
+		}
+	}
+
+	internal Device (IntPtr devptr)
 	{
 		self = devptr;
 		unsafe {
 			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
-
-			next = dev->next;
 
 			path = Marshal.PtrToStringAnsi(dev->path);
 			name = Marshal.PtrToStringAnsi(dev->name);
@@ -107,28 +214,7 @@ public class Device {
 		}
 	}
 
-	const int RTLD_NOW = 2; // for dlopen's flags
-	const int RTLD_GLOBAL = 8;
-	[DllImport("libdl.so", CallingConvention = CallingConvention.Cdecl)]
-	static extern IntPtr dlopen(string filename, int flags);
-	[DllImport("libdl.so", CallingConvention = CallingConvention.Cdecl)]
-	static extern int dlclose(IntPtr handle);
-	static IntPtr handle;
-	   
-	public static void openlib ()
-	{
-		string dll = Assembly.GetExecutingAssembly().Location;
-		string dir = System.IO.Path.GetDirectoryName(dll);
-		string libPath = dir + "/" + "libinputlib.so";
-		handle = dlopen(libPath, RTLD_NOW|RTLD_GLOBAL);
-	}
-
-	public static void closelib ()
-	{
-		dlclose (handle);
-	}
-
-	void close_device ()
+	internal void close_device ()
 	{
 		unsafe {
 			WrappedDevice *dev = (WrappedDevice *) self.ToPointer ();
@@ -137,43 +223,6 @@ public class Device {
 			buttons_handle.Free ();
 			axes_handle.Free ();
 		}
-	}
-
-	public static void Close ()
-	{
-		//Debug.LogFormat ("[InputLib.Device] Close");
-		foreach (var dev in devices) {
-			dev.close_device ();
-		}
-		devices = null;
-		InputLibWrapper.close_devices ();
-	}
-
-	public static void Scan ()
-	{
-		devices = new List<Device> ();
-
-		IntPtr devptr = InputLibWrapper.scan_devices();
-		while (devptr != IntPtr.Zero) {
-			Device dev = new Device (devptr);
-			devices.Add (dev);
-			devptr = dev.next;
-		}
-	}
-
-	public static bool CheckInput ()
-	{
-		if (InputLibWrapper.check_device_input ()) {
-			for (int i = devices.Count; i-- > 0; ) {
-				Device dev = devices[i];
-				unsafe {
-					var wdev = (WrappedDevice *) dev.self.ToPointer ();
-					dev.event_count = wdev->event_count;
-				}
-			}
-			return true;
-		}
-		return false;
 	}
 }
 

@@ -25,7 +25,7 @@ namespace AdvancedInput {
 
 	public class Device
 	{
-		public InputLib.Device rawDevice { get; private set; }
+		public InputLibWrapper.Device rawDevice { get; private set; }
 
 		public int num_axes { get { return rawDevice.num_axes; } }
 		public int num_buttons { get { return rawDevice.num_buttons; } }
@@ -59,7 +59,7 @@ namespace AdvancedInput {
 			}
 		}
 
-		public Device (InputLib.Device dev)
+		public Device (InputLibWrapper.Device dev)
 		{
 			bindingSets = new Dictionary<string, BindingSet> ();
 			activeBindingSets = new List<BindingSet> ();

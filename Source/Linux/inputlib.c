@@ -12,9 +12,13 @@
 #include <dirent.h>
 #include <string.h>
 
+#include "hotplug.h"
 #include "inputlib.h"
 
-device_t *devices;
+static const char *devinput_path = "/dev/input";
+static device_t *devices;
+void (*device_add) (device_t *);
+void (*device_remove) (device_t *);
 
 static void
 setup_buttons (device_t *dev)
@@ -109,7 +113,10 @@ setup_axes (device_t *dev)
 	}
 }
 
-int
+static void device_created (const char *name);
+static void device_deleted (const char *name);
+
+static int
 check_device (const char *path)
 {
 	device_t   *dev;
@@ -140,6 +147,10 @@ check_device (const char *path)
 	//printf ("\tbuttons: %d\n", dev->num_buttons);
 	//printf ("\taxes: %d\n", dev->num_axes);
 
+	if (device_add) {
+		device_add (dev);
+	}
+
 	return fd;
 }
 
@@ -153,6 +164,7 @@ read_device_input (device_t *dev)
 	while (1) {
 		if (read (dev->fd, &event, sizeof (event)) < 0) {
 			perror(dev->name);
+			dev->fd = -1;
 			return;
 		}
 		//printf ("%6d %6d %6x\n", event.type, event.code, event.value);
@@ -185,7 +197,7 @@ read_device_input (device_t *dev)
 }
 
 int
-check_device_input (void)
+inputlib_check_input (void)
 {
 	fd_set      fdset;
 	struct timeval _timeout;
@@ -199,7 +211,12 @@ check_device_input (void)
 
 	FD_ZERO (&fdset);
 
+	inputlib_hotplug_add_select (&fdset, &maxfd);
+
 	for (dev = devices; dev; dev = dev->next) {
+		if (dev->fd < 0) {
+			continue;
+		}
 		FD_SET (dev->fd, &fdset);
 		if (dev->fd > maxfd) {
 			maxfd = dev->fd;
@@ -212,7 +229,13 @@ check_device_input (void)
 	if (res <= 0) {
 		return 0;
 	}
+
+	inputlib_hotplug_check_select (&fdset);
+
 	for (dev = devices; dev; dev = dev->next) {
+		if (dev->fd < 0) {
+			continue;
+		}
 		if (FD_ISSET (dev->fd, &fdset)) {
 			read_device_input (dev);
 		}
@@ -220,53 +243,99 @@ check_device_input (void)
 	return 1;
 }
 
-void
-close_devices (void)
+static void
+close_device (device_t *dev)
 {
-	while (devices) {
-		device_t   *dev = devices;
-		devices = devices->next;
-		close (dev->fd);
-		free (dev->button_map);
-		if (dev->buttons) {
-			free (dev->buttons);
-		}
-		free (dev->axis_map);
-		if (dev->axes) {
-			free (dev->axes);
-		}
-		free (dev->name);
-		free (dev->path);
-		free (dev);
+	if (device_remove) {
+		device_remove (dev);
 	}
+	close (dev->fd);
+	free (dev->button_map);
+	if (dev->buttons) {
+		free (dev->buttons);
+	}
+	free (dev->axis_map);
+	if (dev->axes) {
+		free (dev->axes);
+	}
+	free (dev->name);
+	free (dev->path);
+}
+
+static char *
+make_devname (const char *path, const char *name)
+{
+	int         plen = strlen (path);
+	int         nlen = strlen (name);
+	char       *devname = malloc (plen + nlen + 2);
+
+	strcpy (devname, path);
+	devname[plen] = '/';
+	strcpy (devname + plen + 1, name);
+
+	return devname;
 }
 
 static int
 check_input_device (const char *path, const char *name)
 {
-	int         plen = strlen (path);
-	int         nlen = strlen (name);
-	char       *devname = malloc (plen + nlen + 2);
 	int         ret;
+	char       *devname = make_devname (path, name);
 
-	strcpy (devname, path);
-	devname[plen] = '/';
-	strcpy (devname + plen + 1, name);
 	//puts (devname);
 	ret = check_device (devname);
 	free (devname);
 	return ret;
 }
 
-device_t *
+static void
+device_created (const char *name)
+{
+	char       *devname = make_devname (devinput_path, name);
+	device_t   *dev;
+	int         olddev = 0;
+
+	for (dev = devices; dev; dev = dev->next) {
+		if (strcmp (dev->path, devname) == 0) {
+			// already have this device open
+			olddev = 1;
+			break;
+		}
+	}
+	if (!olddev && check_device (devname) >= 0) {
+		//printf ("found device %s\n", devname);
+	}
+	free (devname);
+}
+
+static void
+device_deleted (const char *name)
+{
+	char       *devname = make_devname (devinput_path, name);
+	device_t  **dev;
+
+	for (dev = &devices; *dev; dev = &(*dev)->next) {
+		if (strcmp ((*dev)->path, devname) == 0) {
+			//printf ("lost device %s\n", (*dev)->path);
+			close_device (*dev);
+			device_t *d = *dev;
+			*dev = (*dev)->next;
+			free (d);
+			break;
+		}
+	}
+	free (devname);
+}
+
+static int
 scan_devices (void)
 {
 	struct dirent *dirent;
 	DIR *dir;
 
-	dir = opendir ("/dev/input");
+	dir = opendir (devinput_path);
 	if (!dir) {
-		return 0;
+		return -1;
 	}
 
 	while ((dirent = readdir (dir))) {
@@ -276,11 +345,35 @@ scan_devices (void)
 		if (strncmp (dirent->d_name, "event", 5)) {
 			continue;
 		}
-		if (check_input_device ("/dev/input", dirent->d_name) < 0) {
+		if (check_input_device (devinput_path, dirent->d_name) < 0) {
 			continue;
 		}
-		printf("%s\n", dirent->d_name);
+		//printf("%s\n", dirent->d_name);
 	}
 	closedir (dir);
-	return devices;
+	return 0;
+}
+
+int
+inputlib_init (void (*dev_add) (device_t *), void (*dev_rem) (device_t *))
+{
+	device_add = dev_add;
+	device_remove = dev_rem;
+	if (scan_devices () != -1) {
+		inputlib_hotplug_init (devinput_path, device_created, device_deleted);
+		return 0;
+	}
+	return -1;
+}
+
+void
+inputlib_close (void)
+{
+	inputlib_hotplug_close ();
+	while (devices) {
+		close_device (devices);
+		device_t   *dev = devices;
+		devices = devices->next;
+		free (dev);
+	}
 }

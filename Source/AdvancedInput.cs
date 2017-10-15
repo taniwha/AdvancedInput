@@ -24,6 +24,7 @@ using UnityEngine;
 using KSP.IO;
 
 namespace AdvancedInput {
+	using InputLibWrapper;
 	[KSPAddon(KSPAddon.Startup.Instantly, true)]
 	public class AdvancedInput : MonoBehaviour
 	{
@@ -33,15 +34,16 @@ namespace AdvancedInput {
 		{
 			instance = this;
 			GameObject.DontDestroyOnLoad(this);
-			InputLib.Device.openlib ();
+			InputLibLoader.openlib ();
 		}
 
 		void OnDestroy ()
 		{
 			instance = this;
-			InputLib.Device.closelib ();
+			InputLibLoader.closelib ();
 		}
 	}
+
 
 	[KSPAddon (KSPAddon.Startup.SpaceCentre, false)]
 	public class AI_TestWindow : MonoBehaviour
@@ -105,16 +107,16 @@ namespace AdvancedInput {
 			instance = null;
 			GameEvents.onHideUI.Remove (onHideUI);
 			GameEvents.onShowUI.Remove (onShowUI);
-			InputLib.Device.Close ();
+			InputLib.Close ();
 		}
 
-		InputLib.Device dev;
+		InputLibWrapper.Device dev;
 		DeviceNamesContainer devNames;
 		int devidx;
 		
 		void Start ()
 		{
-			InputLib.Device.Scan ();
+			InputLib.Init ();
 			UpdateGUIState ();
 		}
 
@@ -162,11 +164,11 @@ namespace AdvancedInput {
 
 		void WindowGUI (int windowID)
 		{
-			dev = InputLib.Device.devices[devidx];
+			dev = InputLib.devices[devidx];
 			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
-			InputLib.Device.CheckInput ();
+			InputLib.CheckInput ();
 			if (GUILayout.Button (dev.name)) {
-				if (++devidx >= InputLib.Device.devices.Count) {
+				if (++devidx >= InputLib.devices.Count) {
 					devidx = 0;
 				}
 			}

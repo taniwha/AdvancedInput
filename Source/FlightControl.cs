@@ -23,6 +23,7 @@ using UnityEngine;
 using KSP.IO;
 
 namespace AdvancedInput {
+	using InputLibWrapper;
 
 	public delegate void AxisBindingDelegate (float value, bool updated);
 	public delegate void ButtonBindingDelegate (int state, bool edge);
@@ -99,22 +100,57 @@ namespace AdvancedInput {
 			prevMainThrottle = -2;
 		}
 
+		void PostMessage (string fmt, params string[] strs)
+		{
+			string message = String.Format (fmt, strs);
+			ScreenMessages.PostScreenMessage (message, 3.0f, ScreenMessageStyle.UPPER_CENTER);
+		}
+
+		void GainedDevice (Device dev)
+		{
+			PostMessage ("{0} {1}.", "Gained connection to", dev.name);
+		}
+
+		void LostDevice (Device dev)
+		{
+			PostMessage ("<color=orange>{0} {1}.</color>", "Lost connection to", dev.name);
+		}
+
+		void DeviceAdded (InputLibWrapper.Device rawdev)
+		{
+			Device dev = new Device (rawdev);
+			devices.Add (dev);
+			GainedDevice (dev);
+		}
+
+		void DeviceRemoved (InputLibWrapper.Device rawdev)
+		{
+			for (int i = devices.Count; i-- > 0; ) {
+				if (devices[i].rawDevice == rawdev) {
+					LostDevice (devices[i]);
+					devices.RemoveAt (i);
+					break;
+				}
+			}
+		}
+
 		void OnDestroy ()
 		{
 			instance = null;
 			GameEvents.onVesselChange.Remove (OnVesselChange);
 			GameEvents.onInputLocksModified.Remove (OnInputLocksModified);
 			DisconnectControlUpdate ();
-			InputLib.Device.Close ();
+			InputLib.Close ();
+			InputLib.DeviceAdded -= DeviceAdded;
+			InputLib.DeviceRemoved -= DeviceRemoved;
 		}
 
 		void Start ()
 		{
 			Debug.LogFormat ("[AI_FlightControl] Start {0}", GetInstanceID ());
-			InputLib.Device.Scan ();
-			foreach (var dev in InputLib.Device.devices) {
-				devices.Add (new Device (dev));
-			}
+			InputLib.DeviceAdded += DeviceAdded;
+			InputLib.DeviceRemoved += DeviceRemoved;
+			InputLib.Init ();
 		}
 
 		Vessel currentVessel;
@@ -171,7 +207,7 @@ namespace AdvancedInput {
 
 		void ControlUpdate (FlightCtrlState state)
 		{
-			InputLib.Device.CheckInput ();
+			InputLib.CheckInput ();
 			for (int i = devices.Count; i-- > 0; ) {
 				devices[i].CheckInput ();
 			}

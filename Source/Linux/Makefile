@@ -9,7 +9,7 @@ CFLAGS = -Wall -Werror -fPIC -g
 CPPFLAGS = -MMD
 MCSFLAGS = -optimize -warnaserror -unsafe
 
-lib_sources = inputlib.c
+lib_sources = inputlib.c hotplug.c
 
 lib_objects = $(patsubst %.c, %.o, $(lib_sources))
 
@@ -26,7 +26,7 @@ dependencies = $(patsubst %.c, %.d, ${sources})
 all: $(lib)
 
 $(lib): $(lib_objects)
-	gcc -shared -Wl,-soname,$@ -o $@ $<
+	gcc -shared -Wl,-soname,$@ -o $@ $^
 
 install: all
 	mkdir -p ${PLUGINDIR}

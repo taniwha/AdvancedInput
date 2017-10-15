@@ -22,6 +22,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace AdvancedInput {
+	using InputLibWrapper;
 
 	public class AxisRecipe
 	{
@@ -64,7 +65,7 @@ namespace AdvancedInput {
 			}
 		}
 
-		public float Process (ref InputLib.Axis axis, bool invert)
+		public float Process (ref Axis axis, bool invert)
 		{
 			float dz = deadzone;
 			float mz = maxzone;

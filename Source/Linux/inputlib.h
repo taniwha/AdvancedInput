@@ -1,3 +1,6 @@
+#ifndef inputlib_inputlib_h
+#define inputlib_inputlib_h
+
 typedef struct {
 	int         num, evnum;
 	int         state;
@@ -25,7 +28,8 @@ typedef struct device_s {
 	int         event_count;
 } device_t;
 
-extern device_t *devices;
-int check_device (const char *path);
-int check_device_input (void);
-device_t *scan_devices (void);
+int inputlib_check_input (void);
+void inputlib_close (void);
+int inputlib_init (void (*dev_add) (device_t *), void (*dev_rem) (device_t *));
+
+#endif//inputlib_inputlib_h

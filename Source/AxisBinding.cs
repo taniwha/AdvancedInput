@@ -73,6 +73,7 @@ namespace AdvancedInput {
 			if (binding != null) {
 				binding.locked = ((ulong)binding.lockMask & mask) != 0;
 			}
+			Update ();
 		}
 	}
 }
