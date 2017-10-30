@@ -9,6 +9,7 @@ typedef struct {
 typedef struct {
 	int         num, evnum;
 	int         value;
+	// relative axes set these to 0
 	int         min, max;
 } axis_t;
 
@@ -21,8 +22,11 @@ typedef struct device_s {
 	int        *button_map;
 	int         num_buttons;
 	button_t   *buttons;
-	int         max_axis;
-	int        *axis_map;
+	int         max_abs_axis;
+	int        *abs_axis_map;
+	int         max_rel_axis;
+	int        *rel_axis_map;
+	// includes both abs and rel axes, with abs first
 	int         num_axes;
 	axis_t     *axes;
 	int         event_count;

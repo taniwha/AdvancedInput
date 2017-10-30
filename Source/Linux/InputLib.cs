@@ -19,9 +19,12 @@ struct WrappedDevice
 	public int num_buttons;
 	//private int pad0;
 	public IntPtr buttons;
-	public int max_axis;
+	public int max_abs_axis;
 	//private int pad1;
-	public IntPtr axis_map;
+	public IntPtr abs_axis_map;
+	public int max_rel_axis;
+	//private int pad1;
+	public IntPtr rel_axis_map;
 	public int num_axes;
 	//private int pad2;
 	public IntPtr axes;

@@ -68,49 +68,99 @@ setup_buttons (device_t *dev)
 	}
 }
 
-static void
-setup_axes (device_t *dev)
+static int
+count_axes (const unsigned char *buf, int len, int *max_axis)
 {
-	int         i, j, len;
-	unsigned char buf[1024];
-	axis_t     *axis;
+	int         count = 0;
+	int         i, j;
 
-	dev->max_axis = -1;
-	dev->num_axes = 0;
-	dev->axis_map = 0;
-	dev->axes = 0;
-	len = ioctl (dev->fd, EVIOCGBIT (EV_ABS, sizeof (buf)), buf);
 	for (i = 0; i < len; i++) {
 		for (j = 0; j < 8; j++) {
 			if (buf[i] & (1 << j)) {
-				dev->num_axes++;
-				dev->max_axis = i * 8 + j;
+				count++;
+				*max_axis = i * 8 + j;
 			}
 		}
 	}
-	dev->axis_map = malloc ((dev->max_axis + 1) * sizeof (int));
-	dev->axes = malloc (dev->num_axes * sizeof (axis_t));
-	for (i = 0, axis = dev->axes; i < len; i++) {
+	return count;
+}
+
+static void
+abs_info (device_t *dev, int axis_ind, axis_t *axis)
+{
+	struct input_absinfo absinfo;
+	ioctl (dev->fd, EVIOCGABS(axis_ind), &absinfo);
+	axis->value = absinfo.value;
+	axis->min = absinfo.minimum;
+	axis->max = absinfo.maximum;
+
+}
+
+static void
+rel_info (device_t *dev, int axis_ind, axis_t *axis)
+{
+	// relative axes are marked by having 0 min/max
+	axis->value = 0;
+	axis->min = 0;
+	axis->max = 0;
+}
+
+static void
+map_axes (const unsigned char *buf, int len, device_t *dev,
+		  int max_axis, int *axis_map, axis_t *first_axis,
+		  void (*info)(device_t*, int, axis_t *))
+{
+	int         i, j;
+	axis_t     *axis;
+
+	for (i = 0, axis = first_axis; i < len; i++) {
 		for (j = 0; j < 8; j++) {
 			int         axis_ind = i * 8 + j;
 			if (buf[i] & (1 << j)) {
-				struct input_absinfo absinfo;
-				ioctl (dev->fd, EVIOCGABS(axis_ind), &absinfo);
 				axis->num = axis - dev->axes;
 				axis->evnum = axis_ind;
-				axis->value = absinfo.value;
-				axis->min = absinfo.minimum;
-				axis->max = absinfo.maximum;
-				dev->axis_map[axis_ind] = axis->num;
-
+				axis_map[axis_ind] = axis->num;
+				info (dev, axis_ind, axis);
 				axis++;
 			} else {
-				if (axis_ind <= dev->max_axis) {
-					dev->axis_map[axis_ind] = -1;
+				if (axis_ind <= max_axis) {
+					axis_map[axis_ind] = -1;
 				}
 			}
 		}
 	}
+}
+
+static void
+setup_axes (device_t *dev)
+{
+	int         alen, rlen, num_abs, num_rel;
+	unsigned char abuf[1024];
+	unsigned char rbuf[1024];
+
+	dev->max_abs_axis = -1;
+	dev->max_rel_axis = -1;
+	dev->num_axes = 0;
+	dev->abs_axis_map = 0;
+	dev->rel_axis_map = 0;
+	dev->axes = 0;
+
+	alen = ioctl (dev->fd, EVIOCGBIT (EV_ABS, sizeof (abuf)), abuf);
+	rlen = ioctl (dev->fd, EVIOCGBIT (EV_REL, sizeof (rbuf)), rbuf);
+
+	num_abs = count_axes (abuf, alen, &dev->max_abs_axis);
+	num_rel = count_axes (rbuf, alen, &dev->max_rel_axis);
+
+	dev->num_axes = num_abs + num_rel;
+
+	dev->abs_axis_map = malloc ((dev->max_abs_axis + 1) * sizeof (int));
+	dev->rel_axis_map = malloc ((dev->max_rel_axis + 1) * sizeof (int));
+
+	dev->axes = malloc (dev->num_axes * sizeof (axis_t));
+	map_axes (abuf, alen, dev, dev->max_abs_axis, dev->abs_axis_map,
+			  dev->axes, abs_info);
+	map_axes (rbuf, rlen, dev, dev->max_rel_axis, dev->rel_axis_map,
+			  dev->axes + num_abs, rel_info);
 }
 
 static void device_created (const char *name);
@@ -177,12 +227,17 @@ read_device_input (device_t *dev)
 				button->state = event.value;
 				break;
 			case EV_ABS:
-				axis = &dev->axes[dev->axis_map[event.code]];
+				axis = &dev->axes[dev->abs_axis_map[event.code]];
 				axis->value = event.value;
 				break;
 			case EV_MSC:
 				break;
 			case EV_REL:
+				axis = &dev->axes[dev->rel_axis_map[event.code]];
+				//printf ("EV_REL %6d %6x %6d %p\n", event.code, event.value,
+				//		dev->rel_axis_map[event.code], axis);
+				axis->value = event.value;
+				break;
 			case EV_SW:
 			case EV_LED:
 			case EV_SND:
@@ -254,7 +309,8 @@ close_device (device_t *dev)
 	if (dev->buttons) {
 		free (dev->buttons);
 	}
-	free (dev->axis_map);
+	free (dev->abs_axis_map);
+	free (dev->rel_axis_map);
 	if (dev->axes) {
 		free (dev->axes);
 	}
