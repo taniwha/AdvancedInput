@@ -63,6 +63,7 @@ namespace AdvancedInput {
 		{
 			bindingSets = new Dictionary<string, BindingSet> ();
 			activeBindingSets = new List<BindingSet> ();
+			defaultBindings = new BindingSet (this);
 			rawDevice = dev;
 
 			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
@@ -97,6 +98,7 @@ namespace AdvancedInput {
 
 		public void CheckInput ()
 		{
+			Debug.LogFormat("[Device] CheckInput: {0}", name);
 			for (int i = activeBindingSets.Count; i-- > 0; ) {
 				activeBindingSets[i].CheckInput ();
 			}
@@ -105,6 +107,7 @@ namespace AdvancedInput {
 
 		public void UpdateInputLock (ulong mask)
 		{
+			Debug.LogFormat("[Device] UpdateInputLock: {0}", name);
 			var sets = bindingSets.Values;
 			foreach (var bs in sets) {
 				bs.UpdateInputLock (mask);

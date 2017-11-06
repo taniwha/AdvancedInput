@@ -60,7 +60,7 @@ namespace AdvancedInput {
 			}
 		}
 
-		public BindingSet (Device dev, ConfigNode node)
+		void init (Device dev)
 		{
 			axisBindings = new List<AxisBinding> ();
 			buttonBindings = new List<ButtonBinding> ();
@@ -74,8 +74,17 @@ namespace AdvancedInput {
 			}
 
 			rawDevice = dev.rawDevice;
+		}
 
+		public BindingSet (Device dev, ConfigNode node)
+		{
+			init (dev);
 			ParseConfig (node);
+		}
+
+		public BindingSet (Device dev)
+		{
+			init (dev);
 		}
 
 		public int ButtonState (int index)
