@@ -26,6 +26,8 @@ typedef struct device_s {
 	int        *abs_axis_map;
 	int         max_rel_axis;
 	int        *rel_axis_map;
+	int         num_abs_axes;
+	int         num_rel_axes;
 	// includes both abs and rel axes, with abs first
 	int         num_axes;
 	axis_t     *axes;

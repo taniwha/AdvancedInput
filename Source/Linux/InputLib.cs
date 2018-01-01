@@ -25,6 +25,8 @@ struct WrappedDevice
 	public int max_rel_axis;
 	//private int pad1;
 	public IntPtr rel_axis_map;
+	public int num_abs_axes;
+	public int num_rel_axes;
 	public int num_axes;
 	//private int pad2;
 	public IntPtr axes;

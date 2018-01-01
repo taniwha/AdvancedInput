@@ -134,7 +134,7 @@ map_axes (const unsigned char *buf, int len, device_t *dev,
 static void
 setup_axes (device_t *dev)
 {
-	int         alen, rlen, num_abs, num_rel;
+	int         alen, rlen;
 	unsigned char abuf[1024];
 	unsigned char rbuf[1024];
 
@@ -148,10 +148,10 @@ setup_axes (device_t *dev)
 	alen = ioctl (dev->fd, EVIOCGBIT (EV_ABS, sizeof (abuf)), abuf);
 	rlen = ioctl (dev->fd, EVIOCGBIT (EV_REL, sizeof (rbuf)), rbuf);
 
-	num_abs = count_axes (abuf, alen, &dev->max_abs_axis);
-	num_rel = count_axes (rbuf, alen, &dev->max_rel_axis);
+	dev->num_abs_axes = count_axes (abuf, alen, &dev->max_abs_axis);
+	dev->num_rel_axes = count_axes (rbuf, alen, &dev->max_rel_axis);
 
-	dev->num_axes = num_abs + num_rel;
+	dev->num_axes = dev->num_abs_axes + dev->num_rel_axes;
 
 	dev->abs_axis_map = malloc ((dev->max_abs_axis + 1) * sizeof (int));
 	dev->rel_axis_map = malloc ((dev->max_rel_axis + 1) * sizeof (int));
@@ -160,7 +160,7 @@ setup_axes (device_t *dev)
 	map_axes (abuf, alen, dev, dev->max_abs_axis, dev->abs_axis_map,
 			  dev->axes, abs_info);
 	map_axes (rbuf, rlen, dev, dev->max_rel_axis, dev->rel_axis_map,
-			  dev->axes + num_abs, rel_info);
+			  dev->axes + dev->num_abs_axes, rel_info);
 }
 
 static void device_created (const char *name);
@@ -208,8 +208,14 @@ static void
 read_device_input (device_t *dev)
 {
 	struct input_event event;
-	button_t *button;
-	axis_t * axis;
+	button_t   *button;
+	axis_t     *axis;
+	int         i;
+
+	// zero motion counters for relative axes
+	for (i = dev->num_abs_axes; i < dev->num_axes; i++) {
+		dev->axes[i].value = 0;
+	}
 
 	while (1) {
 		if (read (dev->fd, &event, sizeof (event)) < 0) {
