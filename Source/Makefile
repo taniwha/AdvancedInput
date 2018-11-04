@@ -102,7 +102,7 @@ clean:
 		make -C $$dir $@ || exit 1; \
 	done
 	rm -f ${TARGETS} Assembly/AssemblyInfo.cs
-	rmdir bin
+	rm -rf bin
 
 install: all
 	@for dir in ${SUBDIRS}; do \
@@ -110,6 +110,5 @@ install: all
 	done
 	mkdir -p ${PLUGINDIR}
 	cp ${TARGETS} ${PLUGINDIR}
-#	cp ${DOC_FILES} ${MODGAMEDATA}
 
 .PHONY: all clean install
