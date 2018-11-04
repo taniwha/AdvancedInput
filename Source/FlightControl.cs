@@ -206,9 +206,10 @@ namespace AdvancedInput {
 
 		void ControlUpdate (FlightCtrlState state)
 		{
-			InputLib.CheckInput ();
-			for (int i = devices.Count; i-- > 0; ) {
-				devices[i].CheckInput ();
+			while (InputLib.CheckInput ()) {
+				for (int i = devices.Count; i-- > 0; ) {
+					devices[i].CheckInput ();
+				}
 			}
 
 			ctrlRoll = ctrlState.roll;
