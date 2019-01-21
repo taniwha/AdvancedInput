@@ -99,6 +99,11 @@ namespace AdvancedInput {
 			} else {
 				value = 0;
 			}
+			if (value > range) {
+				value = range;
+			} else if (value < -range) {
+				value = -range;
+			}
 			return value / range;
 		}
 	}
