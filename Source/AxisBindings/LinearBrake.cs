@@ -52,6 +52,11 @@ namespace AdvancedInput.AxisBindings {
 			}
 		}
 
+		public string GetParameters ()
+		{
+			return side.ToString ();
+		}
+
 		void UpdateBrakingDelegate (AI_LinearBraking lb)
 		{
 			linearBrakingModule = lb;

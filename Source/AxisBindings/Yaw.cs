@@ -34,6 +34,11 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.instance.ctrlState.yaw = value;
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_Yaw (ConfigNode node)
 		{
 		}

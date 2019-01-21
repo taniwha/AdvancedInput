@@ -34,6 +34,11 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.instance.ctrlState.wheelSteer = value;
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_WheelSteer (ConfigNode node)
 		{
 		}

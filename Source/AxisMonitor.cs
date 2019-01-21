@@ -167,6 +167,15 @@ namespace AdvancedInput {
 			GUILayout.EndHorizontal ();
 		}
 
+		void DumpLine (string name, string value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value);
+			GUILayout.EndHorizontal ();
+		}
+
 		void WindowGUI (int windowID)
 		{
 			Device dev = SelectDevice ();
@@ -176,6 +185,17 @@ namespace AdvancedInput {
 					DumpLine ("raw", dev.RawAxis (axis));
 					BindingSet bs = SelectBindingSet (dev);
 					DumpLine ("cooked", bs.AxisValue (axis, false));
+					bool bound = false;
+					for (int i = 0; i < bs.axisBindings.Count; i++) {
+						if (bs.axisBindings[i].index == axis) {
+							bound = true;
+							var binding = bs.axisBindings[i].binding;
+							DumpLine (binding.name, binding.GetParameters());
+						}
+					}
+					if (!bound) {
+						DumpLine ("not bound", "");
+					}
 				}
 			}
 			string name = "Advanced Input";

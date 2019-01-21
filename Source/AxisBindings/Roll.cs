@@ -34,6 +34,11 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.instance.ctrlState.roll = value;
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_Roll (ConfigNode node)
 		{
 		}

@@ -34,6 +34,11 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.instance.ctrlState.X = value;
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_X (ConfigNode node)
 		{
 		}

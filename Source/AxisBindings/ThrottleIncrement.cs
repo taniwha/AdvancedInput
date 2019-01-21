@@ -36,6 +36,11 @@ namespace AdvancedInput.AxisBindings {
 			FlightInputHandler.state.mainThrottle = throttle;
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_ThrottleIncrement (ConfigNode node)
 		{
 		}

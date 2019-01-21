@@ -36,6 +36,11 @@ namespace AdvancedInput.AxisBindings {
 			}
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_MainThrottle (ConfigNode node)
 		{
 		}

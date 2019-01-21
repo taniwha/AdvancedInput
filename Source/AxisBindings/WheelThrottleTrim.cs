@@ -34,6 +34,11 @@ namespace AdvancedInput.AxisBindings {
 			AI_FlightControl.UpdateTrim (ref FlightInputHandler.state.wheelThrottleTrim, value);
 		}
 
+		public string GetParameters ()
+		{
+			return "";
+		}
+
 		public AI_AB_WheelThrottleTrim (ConfigNode node)
 		{
 		}

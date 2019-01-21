@@ -28,6 +28,7 @@ namespace AdvancedInput {
 		ControlTypes lockMask { get; }
 		bool locked { get; set; }
 		void Update (float value, bool updated);
+		string GetParameters ();
 	}
 
 	public class AxisBinding
