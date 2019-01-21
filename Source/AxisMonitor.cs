@@ -191,7 +191,8 @@ namespace AdvancedInput {
 						if (bs.axisBindings[i].index == axis) {
 							bound++;
 							var binding = bs.axisBindings[i].binding;
-							DumpLine (binding.name, binding.GetParameters());
+							string inv = bs.axisBindings[i].invert ? "- " : "";
+							DumpLine (binding.name, inv + binding.GetParameters());
 						}
 					}
 					if (bound == 0) {
