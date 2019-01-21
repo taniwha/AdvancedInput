@@ -155,7 +155,7 @@ namespace AdvancedInput {
 			GUILayout.BeginHorizontal ();
 			GUILayout.Label (name);
 			GUILayout.FlexibleSpace ();
-			GUILayout.Label (value.ToString ("G3"));
+			GUILayout.Label (value.ToString ("G4"));
 			GUILayout.EndHorizontal ();
 		}
 
@@ -177,6 +177,17 @@ namespace AdvancedInput {
 			GUILayout.EndHorizontal ();
 		}
 
+		void DumpLine (string name, string str, float value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (str);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ("G4"));
+			GUILayout.EndHorizontal ();
+		}
+
 		void WindowGUI (int windowID)
 		{
 			Device dev = SelectDevice ();
@@ -192,7 +203,9 @@ namespace AdvancedInput {
 							bound++;
 							var binding = bs.axisBindings[i].binding;
 							string inv = bs.axisBindings[i].invert ? "- " : "";
-							DumpLine (binding.name, inv + binding.GetParameters());
+							DumpLine (binding.name,
+									  inv + binding.GetParameters(),
+									  bs.axisBindings[i].Value ());
 						}
 					}
 					if (bound == 0) {

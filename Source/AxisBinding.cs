@@ -38,6 +38,7 @@ namespace AdvancedInput {
 		public IAxisBinding binding { get; private set; }
 		public float prevValue { get; private set; }
 		public bool invert { get; private set; }
+		public float curve { get; private set; }
 
 		public AxisBinding (BindingSet bs, ConfigNode node)
 		{
@@ -53,16 +54,37 @@ namespace AdvancedInput {
 				invert = b;
 			}
 
+			float c;
+			if (float.TryParse (node.GetValue ("curve"), out c)) {
+				curve = c;
+			}
+
 			bindingSet = bs;
 
 			prevValue = bindingSet.AxisValue (index, invert);
 		}
 
-		public void Update ()
+		public float Value ()
 		{
 			float value = bindingSet.AxisValue (index, invert);
+
+			if (curve > 0 && curve != 1) {
+				if (value > 0) {
+					value = Mathf.Pow (value, curve);
+				} else if (value < 0) {
+					value = -Mathf.Pow (-value, curve);
+				}
+			}
+
+			return value;
+		}
+
+		public void Update ()
+		{
+			float value = Value ();
 			bool updated = value != prevValue;
 			prevValue = value;
+
 			if (binding != null && !binding.locked) {
 				binding.Update (value, updated);
 			}
