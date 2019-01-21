@@ -34,6 +34,7 @@ namespace AdvancedInput {
 		}
 		int devindex;
 		int axisIndex;
+		int bsIndex;
 
 		static AI_AxisMonitor instance;
 		static bool hide_ui = false;
@@ -117,6 +118,21 @@ namespace AdvancedInput {
 			return dev;
 		}
 
+		BindingSet SelectBindingSet (Device dev)
+		{
+			if (bsIndex >= dev.activeBindingSets.Count) {
+				bsIndex = -1;
+			}
+			BindingSet bs = dev.defaultBindings;
+			if (bsIndex >= 0) {
+				bs = dev.activeBindingSets[bsIndex];
+			}
+			if (GUILayout.Button (bs.name)) {
+				bsIndex++;
+			}
+			return bs;
+		}
+
 		int SelectAxis (Device dev)
 		{
 			if (dev.num_axes < 1) {
@@ -158,7 +174,8 @@ namespace AdvancedInput {
 				int axis = SelectAxis (dev);
 				if (axis >= 0) {
 					DumpLine ("raw", dev.RawAxis (axis));
-					//DumpLine ("cooked", dev.AxisValue (axis, false));
+					BindingSet bs = SelectBindingSet (dev);
+					DumpLine ("cooked", bs.AxisValue (axis, false));
 				}
 			}
 			string name = "Advanced Input";

@@ -39,9 +39,9 @@ namespace AdvancedInput {
 			}
 		}
 
-		Dictionary<string, BindingSet> bindingSets;
-		List<BindingSet> activeBindingSets;
-		BindingSet defaultBindings;
+		public Dictionary<string, BindingSet> bindingSets { get; private set; }
+		public List<BindingSet> activeBindingSets { get; private set; }
+		public BindingSet defaultBindings { get; private set; }
 
 		DeviceNamesContainer devNames;
 
