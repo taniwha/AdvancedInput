@@ -35,6 +35,7 @@ namespace AdvancedInput {
 		int devindex;
 		int axisIndex;
 		int bsIndex;
+		int numBindings;
 
 		static AI_AxisMonitor instance;
 		static bool hide_ui = false;
@@ -185,17 +186,21 @@ namespace AdvancedInput {
 					DumpLine ("raw", dev.RawAxis (axis));
 					BindingSet bs = SelectBindingSet (dev);
 					DumpLine ("cooked", bs.AxisValue (axis, false));
-					bool bound = false;
+					int bound = 0;
 					for (int i = 0; i < bs.axisBindings.Count; i++) {
 						if (bs.axisBindings[i].index == axis) {
-							bound = true;
+							bound++;
 							var binding = bs.axisBindings[i].binding;
 							DumpLine (binding.name, binding.GetParameters());
 						}
 					}
-					if (!bound) {
+					if (bound == 0) {
 						DumpLine ("not bound", "");
 					}
+					if (bound < numBindings && numBindings > 1) {
+						windowpos.height = 0;
+					}
+					numBindings = bound;
 				}
 			}
 			string name = "Advanced Input";
