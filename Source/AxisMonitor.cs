@@ -57,7 +57,7 @@ namespace AdvancedInput {
 		void Awake ()
 		{
 			instance = this;
-			AI_AppButton.Toggle += ToggleGUI;
+			//AI_AppButton.Toggle += ToggleGUI;
 			GameEvents.onHideUI.Add (onHideUI);
 			GameEvents.onShowUI.Add (onShowUI);
 		}
@@ -69,7 +69,7 @@ namespace AdvancedInput {
 
 		void OnDestroy ()
 		{
-			AI_AppButton.Toggle -= ToggleGUI;
+			//AI_AppButton.Toggle -= ToggleGUI;
 			GameEvents.onHideUI.Remove (onHideUI);
 			GameEvents.onShowUI.Remove (onShowUI);
 		}
