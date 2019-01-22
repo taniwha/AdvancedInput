@@ -37,6 +37,7 @@ namespace AdvancedInput {
 				}
 				return name;
 			}
+			set { }
 		}
 
 		public Dictionary<string, BindingSet> bindingSets { get; private set; }

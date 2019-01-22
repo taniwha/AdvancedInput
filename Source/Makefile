@@ -43,6 +43,10 @@ MOD_FILES := \
 	ButtonBindings/TranslateUp.cs	\
 	ButtonBindings/WheelThrottleLock.cs	\
 	Linux/InputLib.cs			\
+	UI/ConfigWindow.cs			\
+	UI/ScrollView.cs			\
+	UI/Styles.cs				\
+	UI/TextField.cs				\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
 	AxisMonitor.cs				\
