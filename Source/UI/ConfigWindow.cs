@@ -49,7 +49,6 @@ namespace AdvancedInput {
 
 		const string devShortNameField = "devShortName.AdvancedInput";
 		static TextField devShortName = new TextField (devShortNameField);
-		static GUILayoutOption devShortNameWidth;
 		static GUIStyle devNameStyle;
 
 		static GUILayoutOption toggleWidth = GUILayout.Width (100);
@@ -195,16 +194,11 @@ namespace AdvancedInput {
 
 		void RenameDevice (Device dev)
 		{
-			if (devShortNameWidth == null) {
-				var c = new GUIContent ("Short Name: ");
-				var s = GUI.skin.label.CalcSize (c);
-				devShortNameWidth = GUILayout.Width (s.x); 
-			}
 			GUILayout.BeginHorizontal (expandWidth);
 			if (dev != null) {
-				GUILayout.Label ("Short Name: ", devShortNameWidth);
+				GUILayout.Label ("Short Name: ");
 
-				if (devShortName.HandleInput (expandWidth)) {
+				if (devShortName.HandleInput ()) {
 					if (dev.shortName != devShortName.text) {
 						dev.shortName = devShortName.text;
 					}
@@ -325,12 +319,12 @@ namespace AdvancedInput {
 			GUILayout.BeginVertical (width400);
 			if (dev != null) {
 				GUILayout.Label (dev.name, expandWidth);
+				RenameDevice (dev);
+				AxisButtons ();
+				Inputs (dev);
 			} else {
 				GUILayout.Label ("No device selected", expandWidth);
 			}
-			RenameDevice (dev);
-			AxisButtons ();
-			Inputs (dev);
 			GUILayout.EndVertical ();
 		}
 
