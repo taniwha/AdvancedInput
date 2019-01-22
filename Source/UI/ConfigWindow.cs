@@ -32,7 +32,14 @@ namespace AdvancedInput {
 				return AI_FlightControl.instance.devices;
 			}
 		}
-		Device currentDevice;
+		Device currentDevice, newDevice;
+
+		enum AB {
+			Axis,
+			Button,
+		}
+		AB axisButtons;
+
 
 		int mouseButtons;
 
@@ -45,7 +52,10 @@ namespace AdvancedInput {
 		static GUILayoutOption devShortNameWidth;
 		static GUIStyle devNameStyle;
 
+		static GUILayoutOption toggleWidth = GUILayout.Width (100);
+
 		static ScrollView devScroll = new ScrollView (150, 300);
+		static ScrollView bindingsScroll = new ScrollView (150, 250);
 
 #region Basic Window Controls
 		static AI_ConfigWindow instance;
@@ -148,7 +158,7 @@ namespace AdvancedInput {
 				var rect = GUILayoutUtility.GetLastRect ();
 				if (mouseOver && rect.Contains (e.mousePosition)) {
 					if (mouseButtons == 1) {
-						devShortName.text = dev.shortName; //FIXME
+						devShortName.text = dev.shortName;
 						selected = true;
 					}
 				}
@@ -199,11 +209,114 @@ namespace AdvancedInput {
 						dev.shortName = devShortName.text;
 					}
 				}
-			} else {
-				GUILayout.Label ("", devShortNameWidth);
-				GUILayout.Label ("", expandWidth);
 			}
 
+			GUILayout.EndHorizontal ();
+		}
+
+		void ToggleEnum<T> (ref T curState, T state, string label)
+		{
+			bool on = false;
+
+			on = curState.Equals (state);
+			if (GUILayout.Toggle (on, label, toggleWidth)) {
+				curState = state;
+			}
+		}
+
+		void AxisButtons ()
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.FlexibleSpace ();
+			ToggleEnum<AB> (ref axisButtons, AB.Axis, "Axes");
+			ToggleEnum<AB> (ref axisButtons, AB.Button, "Buttons");
+			GUILayout.FlexibleSpace ();
+			GUILayout.EndHorizontal ();
+		}
+
+		bool InputLine (string name, bool mouseOver)
+		{
+			bool selected = false;
+
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name, devNameStyle);
+			GUILayout.FlexibleSpace ();
+			GUILayout.EndHorizontal ();
+
+			var e = Event.current;
+			if (e.type == EventType.Repaint) {
+				var rect = GUILayoutUtility.GetLastRect ();
+				if (mouseOver && rect.Contains (e.mousePosition)) {
+					if (mouseButtons == 1) {
+						selected = true;
+					}
+				}
+			}
+
+			return selected;
+		}
+
+		int SelectAxis (Device dev, bool mouseOver)
+		{
+			int axis = -1;
+			for (int i = 0; i < dev.num_axes; i++) {
+				if (InputLine (dev.AxisName (i), mouseOver)) {
+					axis = i;
+				}
+			}
+			return axis;
+		}
+
+		int SelectButton (Device dev, bool mouseOver)
+		{
+			int button = -1;
+			for (int i = 0; i < dev.num_buttons; i++) {
+				if (InputLine (dev.ButtonName (i), mouseOver)) {
+					button = i;
+				}
+			}
+			return button;
+		}
+
+		void AxisPanel (int index)
+		{
+			GUILayout.BeginVertical ();
+			GUILayout.Label ("axis");
+			GUILayout.EndVertical ();
+		}
+
+		void ButtonPanel (int index)
+		{
+			GUILayout.BeginVertical ();
+			GUILayout.Label ("button");
+			GUILayout.EndVertical ();
+		}
+
+		void Inputs (Device dev)
+		{
+			int index = -1;
+
+			GUILayout.BeginHorizontal ();
+			bindingsScroll.Begin ();
+			if (dev != null) {
+				switch (axisButtons) {
+					case AB.Axis:
+						index = SelectAxis (dev, bindingsScroll.mouseOver);
+						break;
+					case AB.Button:
+						index = SelectButton (dev, bindingsScroll.mouseOver);
+						break;
+				}
+			}
+			bindingsScroll.End ();
+			switch (axisButtons) {
+				case AB.Axis:
+					AxisPanel (index);
+					break;
+				case AB.Button:
+					ButtonPanel (index);
+					break;
+			}
 			GUILayout.EndHorizontal ();
 		}
 
@@ -216,6 +329,8 @@ namespace AdvancedInput {
 				GUILayout.Label ("No device selected", expandWidth);
 			}
 			RenameDevice (dev);
+			AxisButtons ();
+			Inputs (dev);
 			GUILayout.EndVertical ();
 		}
 
@@ -235,15 +350,18 @@ namespace AdvancedInput {
 				case EventType.MouseUp:
 					mouseButtons &= ~(1 << e.button);
 					break;
+				case EventType.Layout:
+					if (newDevice != null) {
+						currentDevice = newDevice;
+						newDevice = null;
+					}
+					break;
 			}
 
 			GUILayout.BeginVertical ();
 
 			GUILayout.BeginHorizontal ();
-			Device dev = SelectDevice ();
-			if (dev != null) {
-				currentDevice = dev;
-			}
+			newDevice = SelectDevice ();
 			DeviceDetails (currentDevice);
 			GUILayout.EndHorizontal ();
 
