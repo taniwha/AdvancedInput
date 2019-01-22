@@ -40,6 +40,7 @@ namespace AdvancedInput {
 		}
 		AB axisButtons;
 
+		int currentInput = -1, newInput = -1;
 
 		int mouseButtons;
 
@@ -54,7 +55,7 @@ namespace AdvancedInput {
 		static GUILayoutOption toggleWidth = GUILayout.Width (100);
 
 		static ScrollView devScroll = new ScrollView (150, 300);
-		static ScrollView bindingsScroll = new ScrollView (150, 250);
+		static ScrollView inputScroll = new ScrollView (150, 250);
 
 #region Basic Window Controls
 		static AI_ConfigWindow instance;
@@ -272,17 +273,69 @@ namespace AdvancedInput {
 			return button;
 		}
 
-		void AxisPanel (int index)
+		void DumpLine (string name, float value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ("G4"));
+			GUILayout.EndHorizontal ();
+		}
+
+		void DumpLine (string name, int value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ());
+			GUILayout.EndHorizontal ();
+		}
+
+		void DumpLine (string name, string value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value);
+			GUILayout.EndHorizontal ();
+		}
+
+		void DumpLine (string name, string str, float value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (str);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ("G4"));
+			GUILayout.EndHorizontal ();
+		}
+
+		void DumpLine (string name, bool value)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (value.ToString ());
+			GUILayout.EndHorizontal ();
+		}
+
+		void AxisPanel (Device dev, int axis)
 		{
 			GUILayout.BeginVertical ();
-			GUILayout.Label ("axis");
+			GUILayout.Label (dev.AxisName (axis));
+			DumpLine ("raw", dev.RawAxis (axis));
+			var bs = dev.defaultBindings;
+			DumpLine ("cooked", bs.AxisValue (axis, false));
 			GUILayout.EndVertical ();
 		}
 
-		void ButtonPanel (int index)
+		void ButtonPanel (Device dev, int button)
 		{
 			GUILayout.BeginVertical ();
-			GUILayout.Label ("button");
+			GUILayout.Label (dev.ButtonName (button));
+			var bs = dev.defaultBindings;
+			DumpLine ("state", bs.ButtonState (button));
 			GUILayout.EndVertical ();
 		}
 
@@ -291,25 +344,28 @@ namespace AdvancedInput {
 			int index = -1;
 
 			GUILayout.BeginHorizontal ();
-			bindingsScroll.Begin ();
+			inputScroll.Begin ();
 			if (dev != null) {
 				switch (axisButtons) {
 					case AB.Axis:
-						index = SelectAxis (dev, bindingsScroll.mouseOver);
+						index = SelectAxis (dev, inputScroll.mouseOver);
 						break;
 					case AB.Button:
-						index = SelectButton (dev, bindingsScroll.mouseOver);
+						index = SelectButton (dev, inputScroll.mouseOver);
 						break;
 				}
 			}
-			bindingsScroll.End ();
-			switch (axisButtons) {
-				case AB.Axis:
-					AxisPanel (index);
-					break;
-				case AB.Button:
-					ButtonPanel (index);
-					break;
+			newInput = index;
+			inputScroll.End ();
+			if (dev != null && currentInput >= 0) {
+				switch (axisButtons) {
+					case AB.Axis:
+						AxisPanel (dev, currentInput);
+						break;
+					case AB.Button:
+						ButtonPanel (dev, currentInput);
+						break;
+				}
 			}
 			GUILayout.EndHorizontal ();
 		}
@@ -348,6 +404,11 @@ namespace AdvancedInput {
 					if (newDevice != null) {
 						currentDevice = newDevice;
 						newDevice = null;
+						currentInput = newInput = -1;
+					}
+					if (newInput != -1) {
+						currentInput = newInput;
+						newInput = -1;
 					}
 					break;
 			}
