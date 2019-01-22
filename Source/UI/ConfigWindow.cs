@@ -32,6 +32,9 @@ namespace AdvancedInput {
 				return AI_FlightControl.instance.devices;
 			}
 		}
+		Device currentDevice;
+
+		int mouseButtons;
 
 		static GUILayoutOption width400 = GUILayout.Width (400);
 		static GUILayoutOption expandWidth = GUILayout.ExpandWidth (true);
@@ -140,11 +143,14 @@ namespace AdvancedInput {
 			GUILayout.FlexibleSpace ();
 			GUILayout.EndHorizontal ();
 
-			if (Event.current.type == EventType.Repaint) {
+			var e = Event.current;
+			if (e.type == EventType.Repaint) {
 				var rect = GUILayoutUtility.GetLastRect ();
-				if (mouseOver && rect.Contains (Event.current.mousePosition)) {
-					devShortName.text = dev.shortName; //FIXME
-					selected = true;
+				if (mouseOver && rect.Contains (e.mousePosition)) {
+					if (mouseButtons == 1) {
+						devShortName.text = dev.shortName; //FIXME
+						selected = true;
+					}
 				}
 			}
 
@@ -221,11 +227,24 @@ namespace AdvancedInput {
 
 		void WindowGUI (int windowID)
 		{
+			var e = Event.current;
+			switch (e.type) {
+				case EventType.MouseDown:
+					mouseButtons |= 1 << e.button;
+					break;
+				case EventType.MouseUp:
+					mouseButtons &= ~(1 << e.button);
+					break;
+			}
+
 			GUILayout.BeginVertical ();
 
 			GUILayout.BeginHorizontal ();
 			Device dev = SelectDevice ();
-			DeviceDetails (dev);
+			if (dev != null) {
+				currentDevice = dev;
+			}
+			DeviceDetails (currentDevice);
 			GUILayout.EndHorizontal ();
 
 			VersionInfo ();
