@@ -177,10 +177,17 @@ namespace AdvancedInput {
 		Device ListDevices (bool mouseOver)
 		{
 			Device dev = null;
+			bool found = false;
 			for (int i = 0; i < devices.Count; i++) {
+				if (currentDevice == devices[i]) {
+					found = true;
+				}
 				if (DeviceLine (devices[i], mouseOver)) {
 					dev = devices[i];
 				}
+			}
+			if (!found) {
+				currentDevice = null;
 			}
 			return dev;
 		}
