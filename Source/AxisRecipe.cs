@@ -31,10 +31,10 @@ namespace AdvancedInput {
 		};
 
 		public int axis { get; private set; }
-		public int deadzone { get; private set; }
-		public int maxzone { get; private set; }
-		public bool balanced { get; private set; }
-		public bool inverted { get; private set; }
+		public int deadzone { get; set; }
+		public int maxzone { get; set; }
+		public bool balanced { get; set; }
+		public bool inverted { get; set; }
 
 		public AxisRecipe ()
 		{

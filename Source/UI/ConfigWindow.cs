@@ -55,9 +55,17 @@ namespace AdvancedInput {
 		static GUILayoutOption expandWidth = GUILayout.ExpandWidth (true);
 		//static GUILayoutOption noExpandWidth = GUILayout.ExpandWidth (false);
 
-		const string devShortNameField = "devShortName.AdvancedInput";
-		static TextField devShortName = new TextField (devShortNameField);
+		const string devShortNameFieldID = "devShortName.AdvancedInput";
+		static TextField devShortName = new TextField (devShortNameFieldID);
 		static GUIStyle devNameStyle;
+
+		static GUILayoutOption numericWidth = GUILayout.Width (127);
+
+		const string deadzoneFieldID = "deadzone.AdvancedInput";
+		static TextField deadzoneField = new TextField (deadzoneFieldID);
+
+		const string maxzoneFieldID = "maxzone.AdvancedInput";
+		static TextField maxzoneField = new TextField (maxzoneFieldID);
 
 		static GUILayoutOption toggleWidth = GUILayout.Width (100);
 
@@ -314,7 +322,7 @@ namespace AdvancedInput {
 			GUILayout.BeginHorizontal ();
 			GUILayout.Label (name);
 			GUILayout.FlexibleSpace ();
-			GUILayout.Label (value.ToString ("G4"));
+			GUILayout.Label (value.ToString ("G5"));
 			GUILayout.EndHorizontal ();
 		}
 
@@ -356,6 +364,78 @@ namespace AdvancedInput {
 			GUILayout.EndHorizontal ();
 		}
 
+		int Deadzone (AxisRecipe recipe)
+		{
+			if (string.IsNullOrEmpty (deadzoneField.text)) {
+				deadzoneField.text = recipe.deadzone.ToString ();
+			}
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label ("Deadzone");
+			GUILayout.FlexibleSpace ();
+			int val = recipe.deadzone;
+			if (deadzoneField.HandleInput (numericWidth)) {
+				float fval;
+				float.TryParse (deadzoneField.text, out fval);
+				val = (int) fval;
+			}
+			GUILayout.EndHorizontal ();
+			return val;
+		}
+
+		int Maxzone (AxisRecipe recipe)
+		{
+			if (string.IsNullOrEmpty (maxzoneField.text)) {
+				maxzoneField.text = recipe.maxzone.ToString ();
+			}
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label ("Maxzone");
+			GUILayout.FlexibleSpace ();
+			int val = recipe.maxzone;
+			if (maxzoneField.HandleInput (numericWidth)) {
+				float fval;
+				float.TryParse (maxzoneField.text, out fval);
+				val = (int) fval;
+			}
+			GUILayout.EndHorizontal ();
+			return val;
+		}
+
+		bool Inverted (AxisRecipe recipe)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label ("Inverted");
+			GUILayout.FlexibleSpace ();
+			bool val = GUILayout.Toggle (recipe.inverted, "");
+			GUILayout.EndHorizontal ();
+			return val;
+		}
+
+		bool Balanced (AxisRecipe recipe)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label ("Balanced");
+			GUILayout.FlexibleSpace ();
+			bool val = GUILayout.Toggle (recipe.balanced, "");
+			GUILayout.EndHorizontal ();
+			return val;
+		}
+
+		void UpdateRecipe (BindingSet bs, int axis,
+						   int dz, int mz, bool inv, bool bal)
+		{
+			var r = bs.axisRecipes[axis];
+			if ((dz != r.deadzone || mz != r.maxzone
+				 || inv != r.inverted || bal != r.balanced)
+				&& r == BindingSet.defaultRecipe) {
+				bs.axisRecipes[axis] = new AxisRecipe ();
+				r = bs.axisRecipes[axis];
+			}
+			r.deadzone = dz;
+			r.maxzone = mz;
+			r.inverted = inv;
+			r.balanced = bal;
+		}
+
 		void AxisPanel (Device dev, int axis)
 		{
 			GUILayout.BeginVertical ();
@@ -363,6 +443,11 @@ namespace AdvancedInput {
 			DumpLine ("raw", dev.RawAxis (axis));
 			var bs = dev.defaultBindings;
 			DumpLine ("cooked", bs.AxisValue (axis, false));
+			int dz = Deadzone (bs.axisRecipes[axis]);
+			int mz = Maxzone (bs.axisRecipes[axis]);
+			bool inv = Inverted (bs.axisRecipes[axis]);
+			bool bal = Balanced (bs.axisRecipes[axis]);
+			UpdateRecipe (bs, axis, dz, mz, inv, bal);
 			GUILayout.EndVertical ();
 		}
 
@@ -442,10 +527,14 @@ namespace AdvancedInput {
 						ResetAxisStates (currentDevice);
 						newDevice = null;
 						currentInput = newInput = -1;
+						deadzoneField.text = null;
+						maxzoneField.text = null;
 					}
 					if (newInput != -1) {
 						currentInput = newInput;
 						newInput = -1;
+						deadzoneField.text = null;
+						maxzoneField.text = null;
 					}
 					break;
 			}

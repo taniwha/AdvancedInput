@@ -27,8 +27,8 @@ namespace AdvancedInput {
 		public List<AxisBinding> axisBindings { get; private set; }
 		public List<ButtonBinding> buttonBindings { get; private set; }
 
-		AxisRecipe[] axisRecipes;
-		static AxisRecipe defaultRecipe;
+		public AxisRecipe[] axisRecipes;
+		public static AxisRecipe defaultRecipe;
 
 		InputLibWrapper.Device rawDevice;
 
