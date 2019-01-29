@@ -26,6 +26,12 @@ namespace AdvancedInput {
 	[KSPAddon (KSPAddon.Startup.Flight, false)]
 	public class AI_ConfigWindow : MonoBehaviour
 	{
+		public struct AxisState
+		{
+			public float value;
+			public float time;
+		}
+
 		List<Device> devices
 		{
 			get {
@@ -33,6 +39,7 @@ namespace AdvancedInput {
 			}
 		}
 		Device currentDevice, newDevice;
+		AxisState []axisStates;
 
 		enum AB {
 			Axis,
@@ -193,6 +200,15 @@ namespace AdvancedInput {
 			return dev;
 		}
 
+		void ResetAxisStates (Device dev)
+		{
+			axisStates = new AxisState[dev.num_axes];
+			for (int i = dev.num_axes; i-- > 0; ) {
+				axisStates[i].value = dev.RawAxis (i);
+				axisStates[i].time = 0;
+			}
+		}
+
 		void RenameDevice (Device dev)
 		{
 			GUILayout.BeginHorizontal (expandWidth);
@@ -229,11 +245,12 @@ namespace AdvancedInput {
 			GUILayout.EndHorizontal ();
 		}
 
-		bool InputLine (string name, bool mouseOver)
+		bool InputLine (bool state, string name, bool mouseOver)
 		{
 			bool selected = false;
 
 			GUILayout.BeginHorizontal ();
+			GUILayout.Toggle (state, "");
 			GUILayout.Label (name, devNameStyle);
 			GUILayout.FlexibleSpace ();
 			GUILayout.EndHorizontal ();
@@ -255,7 +272,17 @@ namespace AdvancedInput {
 		{
 			int axis = -1;
 			for (int i = 0; i < dev.num_axes; i++) {
-				if (InputLine (dev.AxisName (i), mouseOver)) {
+				float val = dev.RawAxis (i);
+				bool state = false;
+				float time = Time.time;
+				if (val != axisStates[i].value) {
+					axisStates[i].value = val;
+					axisStates[i].time = time;
+					state = true;
+				} else if (time - axisStates[i].time < 1) {
+					state = true;
+				}
+				if (InputLine (state, dev.AxisName (i), mouseOver)) {
 					axis = i;
 				}
 			}
@@ -266,7 +293,9 @@ namespace AdvancedInput {
 		{
 			int button = -1;
 			for (int i = 0; i < dev.num_buttons; i++) {
-				if (InputLine (dev.ButtonName (i), mouseOver)) {
+				var bs = dev.defaultBindings;
+				bool state = bs.ButtonState (i) != 0;
+				if (InputLine (state, dev.ButtonName (i), mouseOver)) {
 					button = i;
 				}
 			}
@@ -401,8 +430,9 @@ namespace AdvancedInput {
 					mouseButtons &= ~(1 << e.button);
 					break;
 				case EventType.Layout:
-					if (newDevice != null) {
+					if (newDevice != null && newDevice != currentDevice) {
 						currentDevice = newDevice;
+						ResetAxisStates (currentDevice);
 						newDevice = null;
 						currentInput = newInput = -1;
 					}
