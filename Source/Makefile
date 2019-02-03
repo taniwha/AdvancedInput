@@ -30,6 +30,7 @@ MOD_FILES := \
 	ButtonBindings/ActionGroup.cs	\
 	ButtonBindings/Brake.cs	\
 	ButtonBindings/ButtonMode.cs	\
+	ButtonBindings/CustomAction.cs	\
 	ButtonBindings/Gear.cs	\
 	ButtonBindings/Lights.cs	\
 	ButtonBindings/MainThrottleLock.cs	\
