@@ -1,9 +1,16 @@
 #! /bin/sh
 set -e
-modname=$1
-ver=`Source/tools/git-version-gen --prefix v .tarball-version`
+ver=`tools/git-version-gen --prefix v .tarball-version`
 make GAMEDATA=`pwd`/tmp install
 cd tmp
-zip -r9 ../${modname}_v${ver}.zip ${modname}
+zip -r9 ../${MODNAME}_v${ver}.zip ${MODNAME}
 cd ..
 rm -rf tmp
+
+if test "$1" = "-u" -a -n "$UPLOAD_DIR" -a -n "$UPLOAD_URL"; then
+	uploads="${MODNAME}_v${ver}.zip"
+	scp ${uploads} ${UPLOAD_DIR}
+	for f in ${uploads}; do
+		echo ${UPLOAD_URL}/"$f" | sed -s 's/ /%20/g'
+	done
+fi
