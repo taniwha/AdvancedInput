@@ -50,7 +50,6 @@ MOD_FILES := \
 	UI/TextField.cs				\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
-	AxisMonitor.cs				\
 	AxisRecipe.cs				\
 	BindingSet.cs				\
 	ButtonBinding.cs			\
