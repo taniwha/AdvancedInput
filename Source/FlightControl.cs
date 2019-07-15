@@ -138,10 +138,10 @@ namespace AdvancedInput {
 			instance = null;
 			GameEvents.onVesselChange.Remove (OnVesselChange);
 			GameEvents.onInputLocksModified.Remove (OnInputLocksModified);
-			DisconnectControlUpdate ();
 			InputLib.Close ();
 			InputLib.DeviceAdded -= DeviceAdded;
 			InputLib.DeviceRemoved -= DeviceRemoved;
+			FlightInputHandler.OnRawAxisInput -= ControlUpdate;
 		}
 
 		void Start ()
@@ -150,39 +150,12 @@ namespace AdvancedInput {
 			InputLib.DeviceAdded += DeviceAdded;
 			InputLib.DeviceRemoved += DeviceRemoved;
 			InputLib.Init ();
-		}
-
-		Vessel currentVessel;
-
-		void DisconnectControlUpdate ()
-		{
-			if (currentVessel != null) {
-				currentVessel.OnPreAutopilotUpdate -= ControlUpdate;
-				currentVessel.OnPostAutopilotUpdate -= OverrideSAS;
-			}
-		}
-
-		void ConnectControlUpdate (Vessel vessel)
-		{
-			currentVessel = vessel;
-			if (vessel != null) {
-				vessel.OnPreAutopilotUpdate += ControlUpdate;
-				currentVessel.OnPostAutopilotUpdate += OverrideSAS;
-			}
-
-			/*FIXME use others?
-			 * vessel.OnPreAutopilotUpdate;
-			 * vessel.OnAutopilotUpdate;
-			 * vessel.OnPostAutopilotUpdate;
-			 * vessel.OnFlyByWire;
-			 */
+			FlightInputHandler.OnRawAxisInput = ControlUpdate + FlightInputHandler.OnRawAxisInput;
 		}
 
 		void OnVesselChange(Vessel vessel)
 		{
 			Debug.LogFormat ("[AI_FlightControl] OnVesselChange {0}", GetInstanceID ());
-			DisconnectControlUpdate ();
-			ConnectControlUpdate (vessel);
 			onVesselChange.Fire (vessel);
 		}
 
@@ -241,39 +214,6 @@ namespace AdvancedInput {
 		bool Different (float a, float b)
 		{
 			return Mathf.Abs (a - b) > 0.01;
-		}
-
-		bool OverridingSAS (float user, float sas)
-		{
-			// user and sas are in opposite directions
-			if (user * sas < 0) {
-				return true;
-			}
-			// user is larger than sas
-			if (Math.Abs (user) > Math.Abs (sas)) {
-				return true;
-			}
-			return false;
-		}
-
-		void OverrideSAS (FlightCtrlState state)
-		{
-			if (!currentVessel.ActionGroups[KSPActionGroup.SAS]) {
-				// SAS is off, so no need to do anything
-				return;
-			}
-			if (Different (ctrlPitch, state.pitch)
-				&& OverridingSAS (ctrlPitch, state.pitch)) {
-				state.pitch = ctrlPitch;
-			}
-			if (Different (ctrlYaw, state.yaw)
-				&& OverridingSAS (ctrlYaw, state.yaw)) {
-				state.yaw = ctrlYaw;
-			}
-			if (Different (ctrlRoll, state.roll)
-				&& OverridingSAS (ctrlRoll, state.roll)) {
-				state.roll = ctrlRoll;
-			}
 		}
 
 		public static IAxisBinding GetAxisBinding (ConfigNode node)
