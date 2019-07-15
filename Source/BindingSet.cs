@@ -45,7 +45,9 @@ namespace AdvancedInput {
 				switch (n.name) {
 					case "AxisRecipe":
 						var ar = new AxisRecipe (n);
-						axisRecipes[ar.axis] = ar;
+						if (ar.axis < axisRecipes.Length) {
+							axisRecipes[ar.axis] = ar;
+						}
 						break;
 					case "AxisBinding":
 						var ab = new AxisBinding (this, n);
