@@ -58,6 +58,7 @@ MOD_FILES := \
 	DeviceNamesContainer.cs		\
 	FlightControl.cs			\
 	LinearBraking.cs			\
+	SAS.cs						\
 	Toolbar.cs					\
 	Utils.cs					\
 	$e
@@ -99,6 +100,7 @@ bin/${MODNAME}.dll: ${MOD_FILES}
 	${GMCS} ${GMCSFLAGS} -t:library -lib:${MANAGED} \
 		-r:Assembly-CSharp,Assembly-CSharp-firstpass \
 		-r:UnityEngine,UnityEngine.UI,UnityEngine.IMGUIModule,UnityEngine.CoreModule,UnityEngine.TextRenderingModule,UnityEngine.InputLegacyModule,UnityEngine.AnimationModule \
+		-r:../Assets/0Harmony.1.2.0.1 \
 		-out:$@ $^
 
 clean:

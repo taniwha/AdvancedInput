@@ -21,9 +21,11 @@ using System.Linq;
 using UnityEngine;
 
 using KSP.IO;
+using Harmony;
 
 namespace AdvancedInput {
 	using InputLibWrapper;
+
 	[KSPAddon(KSPAddon.Startup.Instantly, true)]
 	public class AdvancedInput : MonoBehaviour
 	{
@@ -34,6 +36,9 @@ namespace AdvancedInput {
 			instance = this;
 			GameObject.DontDestroyOnLoad(this);
 			InputLibLoader.openlib ();
+
+			HarmonyInstance harmony = HarmonyInstance.Create ("AdvancedInput");
+			harmony.PatchAll (Assembly.GetExecutingAssembly ());
 		}
 
 		void OnDestroy ()
