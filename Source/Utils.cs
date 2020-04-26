@@ -15,11 +15,6 @@ You should have received a copy of the GNU Lesser General Public License
 along with Advanced Input.  If not, see <http://www.gnu.org/licenses/>.
 */
 using System;
-using System.Reflection;
-using System.Collections.Generic;
-using UnityEngine;
-
-using KSP.IO;
 
 namespace AdvancedInput {
 	public static class AI_Utils

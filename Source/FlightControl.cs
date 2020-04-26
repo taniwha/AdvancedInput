@@ -19,8 +19,6 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 
-using KSP.IO;
-
 namespace AdvancedInput {
 	using InputLibWrapper;
 

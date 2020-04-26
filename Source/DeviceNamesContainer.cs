@@ -39,9 +39,9 @@ namespace AdvancedInput {
 			}
 			axes = node.GetValues ("axis");
 			buttons = node.GetValues ("button");
-			Debug.Log (name);
-			Debug.Log (axes);
-			Debug.Log (buttons);
+			Debug.Log ($"{name}");
+			Debug.Log ($"{axes}");
+			Debug.Log ($"{buttons}");
 		}
 
 		public string AxisName (int ind)
