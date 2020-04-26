@@ -81,11 +81,14 @@ namespace AdvancedInput {
 
 		public void Update ()
 		{
+			if (binding == null) {
+				return;
+			}
 			float value = Value ();
 			bool updated = value != prevValue;
 			prevValue = value;
 
-			if (binding != null && !binding.locked) {
+			if (!binding.locked) {
 				binding.Update (value, updated);
 			}
 		}
