@@ -43,7 +43,7 @@ namespace AdvancedInput {
 
 		void OnDestroy ()
 		{
-			instance = this;
+			instance = null;
 			InputLibLoader.closelib ();
 		}
 	}
