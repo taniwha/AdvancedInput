@@ -29,7 +29,6 @@ namespace AdvancedInput {
 	public class AI_FlightControl : MonoBehaviour
 	{
 		public FlightCtrlState ctrlState;
-		float ctrlPitch, ctrlYaw, ctrlRoll;
 
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
@@ -177,21 +176,6 @@ namespace AdvancedInput {
 
 		void ControlUpdate (FlightCtrlState state)
 		{
-			while (InputLib.CheckInput ()) {
-				for (int i = devices.Count; i-- > 0; ) {
-					devices[i].CheckInput ();
-				}
-			}
-
-			ctrlRoll = ctrlState.roll;
-			state.roll = ClampedAdd (state.roll, ctrlRoll);
-			ctrlPitch = ctrlState.pitch;
-			state.pitch = ClampedAdd (state.pitch, ctrlPitch);
-			ctrlYaw = ctrlState.yaw;
-			state.yaw = ClampedAdd (state.yaw, ctrlYaw);
-			state.wheelSteer = ClampedAdd (state.wheelSteer,
-										   ctrlState.wheelSteer);
-
 			if (prevMainThrottle != state.mainThrottle) {
 				prevMainThrottle = state.mainThrottle;
 				if (!overrideMainThrottle) {
@@ -204,6 +188,21 @@ namespace AdvancedInput {
 					ctrlState.wheelThrottle = state.wheelThrottle;
 				}
 			}
+
+			while (InputLib.CheckInput ()) {
+				for (int i = devices.Count; i-- > 0; ) {
+					devices[i].CheckInput ();
+				}
+			}
+
+			float ctrlRoll = ctrlState.roll;
+			state.roll = ClampedAdd (state.roll, ctrlRoll);
+			float ctrlPitch = ctrlState.pitch;
+			state.pitch = ClampedAdd (state.pitch, ctrlPitch);
+			float ctrlYaw = ctrlState.yaw;
+			state.yaw = ClampedAdd (state.yaw, ctrlYaw);
+			state.wheelSteer = ClampedAdd (state.wheelSteer,
+										   ctrlState.wheelSteer);
 
 			state.mainThrottle = ctrlState.mainThrottle;
 			state.wheelThrottle = ctrlState.wheelThrottle;
