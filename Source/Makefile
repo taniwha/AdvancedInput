@@ -68,8 +68,8 @@ DOC_FILES := \
 	README.md
 
 RESGEN2		:= resgen2
-GMCS		:= mcs
-GMCSFLAGS	:= -optimize -warnaserror -unsafe
+CSC		:= csc
+CSCFLAGS	:= -highentropyva- -noconfig -nostdlib+ -t:library -optimize -warnaserror -debug -unsafe
 GIT			:= git
 TAR			:= tar
 ZIP			:= zip
@@ -88,19 +88,37 @@ version:
 info:
 	@echo "${MODNAME} Build Information"
 	@echo "    resgen2:    ${RESGEN2}"
-	@echo "    gmcs:       ${GMCS}"
-	@echo "    gmcs flags: ${GMCSFLAGS}"
+	@echo "    csc:        ${CSC}"
+	@echo "    csc flags:  ${CSCFLAGS}"
 	@echo "    git:        ${GIT}"
 	@echo "    tar:        ${TAR}"
 	@echo "    zip:        ${ZIP}"
 	@echo "    KSP Data:   ${KSPDIR}"
 
+SYSTEM := \
+	-lib:${MANAGED} \
+	-r:${MANAGED}/mscorlib.dll \
+	-r:${MANAGED}/System.dll \
+	-r:${MANAGED}/System.Core.dll
+
+KSP := \
+	-r:Assembly-CSharp.dll \
+	-r:Assembly-CSharp-firstpass.dll
+
+UNITY := \
+	-r:UnityEngine.dll \
+	-r:UnityEngine.UI.dll \
+	-r:UnityEngine.IMGUIModule.dll \
+	-r:UnityEngine.CoreModule.dll \
+	-r:UnityEngine.TextRenderingModule.dll \
+	-r:UnityEngine.InputLegacyModule.dll \
+	-r:UnityEngine.AnimationModule.dll \
+	$e
+
 bin/${MODNAME}.dll: ${MOD_FILES}
 	@mkdir -p bin
-	${GMCS} ${GMCSFLAGS} -t:library -lib:${MANAGED} \
-		-r:Assembly-CSharp,Assembly-CSharp-firstpass \
-		-r:UnityEngine,UnityEngine.UI,UnityEngine.IMGUIModule,UnityEngine.CoreModule,UnityEngine.TextRenderingModule,UnityEngine.InputLegacyModule,UnityEngine.AnimationModule \
-		-r:../Assets/0Harmony.1.2.0.1 \
+	${CSC} ${CSCFLAGS} ${SYSTEM} ${KSP} ${UNITY} \
+		-r:../Assets/0Harmony.1.2.0.1.dll \
 		-out:$@ $^
 
 clean:
