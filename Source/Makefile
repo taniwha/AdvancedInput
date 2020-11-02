@@ -10,6 +10,15 @@ TARGETS		:= bin/${MODNAME}.dll
 MOD_FILES := \
     Assembly/AssemblyInfo.cs	\
 	Assembly/VersionReport.cs	\
+	AxisBindings/EVAParachutePitch.cs	\
+	AxisBindings/EVAParachuteRoll.cs	\
+	AxisBindings/EVAX.cs	\
+	AxisBindings/EVAPitch.cs	\
+	AxisBindings/EVARoll.cs	\
+	AxisBindings/EVAX.cs	\
+	AxisBindings/EVAY.cs	\
+	AxisBindings/EVAYaw.cs	\
+	AxisBindings/EVAZ.cs	\
 	AxisBindings/LinearBrake.cs	\
 	AxisBindings/MainThrottle.cs	\
 	AxisBindings/Pitch.cs	\
@@ -31,6 +40,7 @@ MOD_FILES := \
 	ButtonBindings/Brake.cs	\
 	ButtonBindings/ButtonMode.cs	\
 	ButtonBindings/CustomAction.cs	\
+	ButtonBindings/EVAAngularBrake.cs	\
 	ButtonBindings/Gear.cs	\
 	ButtonBindings/Lights.cs	\
 	ButtonBindings/MainThrottleLock.cs	\
@@ -57,6 +67,8 @@ MOD_FILES := \
 	Device.cs					\
 	DeviceNamesContainer.cs		\
 	FlightControl.cs			\
+	KerbalCtrlState.cs			\
+	KerbalEVA.cs				\
 	LinearBraking.cs			\
 	SAS.cs						\
 	Toolbar.cs					\
@@ -113,6 +125,7 @@ UNITY := \
 	-r:UnityEngine.TextRenderingModule.dll \
 	-r:UnityEngine.InputLegacyModule.dll \
 	-r:UnityEngine.AnimationModule.dll \
+	-r:UnityEngine.PhysicsModule.dll \
 	$e
 
 bin/${MODNAME}.dll: ${MOD_FILES}

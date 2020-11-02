@@ -29,6 +29,7 @@ namespace AdvancedInput {
 	public class AI_FlightControl : MonoBehaviour
 	{
 		public FlightCtrlState ctrlState;
+		public KerbalCtrlState kerbalState;
 
 		public static bool overrideMainThrottle;
 		public static bool overrideWheelThrottle;
@@ -91,6 +92,7 @@ namespace AdvancedInput {
 			GameEvents.onVesselChange.Add (OnVesselChange);
 			GameEvents.onInputLocksModified.Add (OnInputLocksModified);
 			ctrlState = new FlightCtrlState ();
+			kerbalState = new KerbalCtrlState ();
 			devices = new List<Device> ();
 			prevMainThrottle = -2;
 			prevMainThrottle = -2;
@@ -174,6 +176,15 @@ namespace AdvancedInput {
 			return Mathf.Clamp (a + b, -1f, 1f);
 		}
 
+		public void CheckInput ()
+		{
+			while (InputLib.CheckInput ()) {
+				for (int i = devices.Count; i-- > 0; ) {
+					devices[i].CheckInput ();
+				}
+			}
+		}
+
 		void ControlUpdate (FlightCtrlState state)
 		{
 			if (prevMainThrottle != state.mainThrottle) {
@@ -189,11 +200,7 @@ namespace AdvancedInput {
 				}
 			}
 
-			while (InputLib.CheckInput ()) {
-				for (int i = devices.Count; i-- > 0; ) {
-					devices[i].CheckInput ();
-				}
-			}
+			CheckInput ();
 
 			float ctrlRoll = ctrlState.roll;
 			state.roll = ClampedAdd (state.roll, ctrlRoll);
