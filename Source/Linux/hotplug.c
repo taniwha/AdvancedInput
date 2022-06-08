@@ -105,7 +105,7 @@ inputlib_hotplug_init(const char *path,
 }
 
 void
-inputlib_hotplug_close ()
+inputlib_hotplug_close (void)
 {
 	if (inotify_fd != -1) {
 		close (inotify_fd);

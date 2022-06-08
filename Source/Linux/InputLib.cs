@@ -27,8 +27,11 @@ namespace AdvancedInput.InputLibWrapper {
 struct WrappedDevice
 {
 	public IntPtr next;
+	public IntPtr prev;
 	public IntPtr path;
 	public IntPtr name;
+	public IntPtr phys;
+	public IntPtr uniq;
 	public int fd;
 	public int max_button;
 	public IntPtr button_map;
@@ -47,6 +50,10 @@ struct WrappedDevice
 	//private int pad2;
 	public IntPtr axes;
 	public int event_count;
+
+	public IntPtr data;
+	public IntPtr axis_event;
+	public IntPtr button_event;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -67,10 +74,10 @@ public struct Axis
 static class ilw
 {
 	//[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-	public delegate void Callback (IntPtr dev);
+	public delegate void DevCallback (IntPtr dev);
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
-	public static extern int inputlib_init (Callback addDev, Callback remDev);
+	public static extern int inputlib_init (DevCallback addDev, DevCallback remDev);
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
 	public static extern void inputlib_close ();
@@ -143,8 +150,8 @@ public class InputLib
 		}
 	}
 
-	static ilw.Callback addDev;
-	static ilw.Callback remDev;
+	static ilw.DevCallback addDev;
+	static ilw.DevCallback remDev;
 
 	public static bool Init ()
 	{

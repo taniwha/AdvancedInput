@@ -9,7 +9,7 @@ CFLAGS = -Wall -Werror -fPIC -g
 CPPFLAGS = -MMD
 MCSFLAGS = -optimize -warnaserror -unsafe
 
-lib_sources = inputlib.c hotplug.c
+lib_sources = dstring.c inputlib.c hotplug.c
 
 lib_objects = $(patsubst %.c, %.o, $(lib_sources))
 

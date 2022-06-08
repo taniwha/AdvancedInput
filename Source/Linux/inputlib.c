@@ -28,6 +28,7 @@ along with Advanced Input.  If not, see <http://www.gnu.org/licenses/>.
 #include <dirent.h>
 #include <string.h>
 
+#include "dstring.h"
 #include "hotplug.h"
 #include "inputlib.h"
 
@@ -182,26 +183,45 @@ setup_axes (device_t *dev)
 static void device_created (const char *name);
 static void device_deleted (const char *name);
 
+#define get_string(fd, ioctlid, dstr)	\
+	({																	\
+		int         size;												\
+		while ((size = ioctl (fd, ioctlid (dstr->truesize), dstr->str))	\
+			   == (int) dstr->truesize) {								\
+			dstr->size = dstr->truesize + 1024;							\
+			dstring_adjust (dstr);										\
+		}																\
+		dstr->size = size <= 0 ? 1 : size;								\
+		dstr->str[dstr->size - 1] = 0;									\
+		dstr->str;														\
+	})
+
 static int
 check_device (const char *path)
 {
 	device_t   *dev;
 	int         fd;
-	char        buf[256];	// FIXME
-	
+
 	fd = open (path, O_RDWR);
 	if (fd == -1)
 		return -1;
 
 	dev = malloc (sizeof (device_t));
 	dev->next = devices;
+	dev->prev = &devices;
+	if (devices) {
+		devices->prev = &dev->next;
+	}
 	devices = dev;
 
 	dev->path = strdup (path);
 	dev->fd = fd;
 
-	ioctl (fd, EVIOCGNAME (sizeof (buf)), buf);
-	dev->name = strdup (buf);
+	dstring_t  *buff = dstring_newstr ();
+	dev->name = strdup (get_string (fd, EVIOCGNAME, buff));
+	dev->phys = strdup (get_string (fd, EVIOCGPHYS, buff));
+	dev->uniq = strdup (get_string (fd, EVIOCGUNIQ, buff));
+	dstring_delete (buff);
 
 	setup_buttons(dev);
 	setup_axes(dev);
@@ -220,18 +240,29 @@ check_device (const char *path)
 	return fd;
 }
 
+static const char *event_codes[] = {
+	"EV_SYN",
+	"EV_KEY",
+	"EV_REL",
+	"EV_ABS",
+	"EV_MSC",
+	"EV_SW",
+	0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0,
+	"EV_LED",
+	"EV_SND",
+	"EV_REP",
+	"EV_FF",
+	"EV_PWR",
+	"EV_FF_STATUS",
+};
+
 static void
 read_device_input (device_t *dev)
 {
 	struct input_event event;
 	button_t   *button;
 	axis_t     *axis;
-	int         i;
-
-	// zero motion counters for relative axes
-	for (i = dev->num_abs_axes; i < dev->num_axes; i++) {
-		dev->axes[i].value = 0;
-	}
 
 	while (1) {
 		if (read (dev->fd, &event, sizeof (event)) < 0) {
@@ -239,7 +270,10 @@ read_device_input (device_t *dev)
 			dev->fd = -1;
 			return;
 		}
-		//printf ("%6d %6d %6x\n", event.type, event.code, event.value);
+		if (0) {
+			const char *ev = event_codes[event.type];
+			printf ("%6d(%s) %6d %6x\n", event.type, ev ? ev : "?", event.code, event.value);
+		}
 		switch (event.type) {
 			case EV_SYN:
 				dev->event_count++;
@@ -247,10 +281,16 @@ read_device_input (device_t *dev)
 			case EV_KEY:
 				button = &dev->buttons[dev->button_map[event.code]];
 				button->state = event.value;
+				if (dev->button_event) {
+					dev->button_event (button, dev->data);
+				}
 				break;
 			case EV_ABS:
 				axis = &dev->axes[dev->abs_axis_map[event.code]];
 				axis->value = event.value;
+				if (dev->axis_event) {
+					dev->axis_event (axis, dev->data);
+				}
 				break;
 			case EV_MSC:
 				break;
@@ -259,6 +299,9 @@ read_device_input (device_t *dev)
 				//printf ("EV_REL %6d %6x %6d %p\n", event.code, event.value,
 				//		dev->rel_axis_map[event.code], axis);
 				axis->value = event.value;
+				if (dev->axis_event) {
+					dev->axis_event (axis, dev->data);
+				}
 				break;
 			case EV_SW:
 			case EV_LED:
@@ -267,8 +310,39 @@ read_device_input (device_t *dev)
 			case EV_FF:
 			case EV_PWR:
 			case EV_FF_STATUS:
-				printf ("%6d %6d %6x\n", event.type, event.code, event.value);
+				//printf ("%6d %6d %6x\n", event.type, event.code, event.value);
 				break;
+		}
+	}
+}
+
+void
+inputlib_add_select (fd_set *fdset, int *maxfd)
+{
+	inputlib_hotplug_add_select (fdset, maxfd);
+
+	for (device_t *dev = devices; dev; dev = dev->next) {
+		if (dev->fd < 0) {
+			continue;
+		}
+		FD_SET (dev->fd, fdset);
+		if (dev->fd > *maxfd) {
+			*maxfd = dev->fd;
+		}
+	}
+}
+
+void
+inputlib_check_select (fd_set *fdset)
+{
+	inputlib_hotplug_check_select (fdset);
+
+	for (device_t *dev = devices; dev; dev = dev->next) {
+		if (dev->fd < 0) {
+			continue;
+		}
+		if (FD_ISSET (dev->fd, fdset)) {
+			read_device_input (dev);
 		}
 	}
 }
@@ -281,24 +355,13 @@ inputlib_check_input (void)
 	struct timeval *timeout = &_timeout;
 	int         res;
 	int         maxfd = -1;
-	device_t   *dev;
 
 	_timeout.tv_sec = 0;
 	_timeout.tv_usec = 0;
 
 	FD_ZERO (&fdset);
 
-	inputlib_hotplug_add_select (&fdset, &maxfd);
-
-	for (dev = devices; dev; dev = dev->next) {
-		if (dev->fd < 0) {
-			continue;
-		}
-		FD_SET (dev->fd, &fdset);
-		if (dev->fd > maxfd) {
-			maxfd = dev->fd;
-		}
-	}
+	inputlib_add_select (&fdset, &maxfd);
 	if (maxfd < 0) {
 		return 0;
 	}
@@ -307,22 +370,18 @@ inputlib_check_input (void)
 		return 0;
 	}
 
-	inputlib_hotplug_check_select (&fdset);
-
-	for (dev = devices; dev; dev = dev->next) {
-		if (dev->fd < 0) {
-			continue;
-		}
-		if (FD_ISSET (dev->fd, &fdset)) {
-			read_device_input (dev);
-		}
-	}
+	inputlib_check_select (&fdset);
 	return 1;
 }
 
 static void
 close_device (device_t *dev)
 {
+	if (dev->next) {
+		dev->next->prev = dev->prev;
+	}
+	*dev->prev = dev->next;
+
 	if (device_remove) {
 		device_remove (dev);
 	}
@@ -336,8 +395,11 @@ close_device (device_t *dev)
 	if (dev->axes) {
 		free (dev->axes);
 	}
+	free (dev->phys);
+	free (dev->uniq);
 	free (dev->name);
 	free (dev->path);
+	free (dev);
 }
 
 static char *
@@ -396,9 +458,6 @@ device_deleted (const char *name)
 		if (strcmp ((*dev)->path, devname) == 0) {
 			//printf ("lost device %s\n", (*dev)->path);
 			close_device (*dev);
-			device_t *d = *dev;
-			*dev = (*dev)->next;
-			free (d);
 			break;
 		}
 	}
@@ -450,8 +509,5 @@ inputlib_close (void)
 	inputlib_hotplug_close ();
 	while (devices) {
 		close_device (devices);
-		device_t   *dev = devices;
-		devices = devices->next;
-		free (dev);
 	}
 }
