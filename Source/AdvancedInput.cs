@@ -33,178 +33,23 @@ namespace AdvancedInput {
 
 		void Awake ()
 		{
+			HarmonyInstance harmony = HarmonyInstance.Create ("AdvancedInput");
+			harmony.PatchAll (Assembly.GetExecutingAssembly ());
+
+
 			instance = this;
 			GameObject.DontDestroyOnLoad(this);
 			InputLibLoader.openlib ();
 
-			HarmonyInstance harmony = HarmonyInstance.Create ("AdvancedInput");
-			harmony.PatchAll (Assembly.GetExecutingAssembly ());
-		}
-
-		void OnDestroy ()
-		{
-			instance = null;
-			InputLibLoader.closelib ();
-		}
-	}
-
-
-	[KSPAddon (KSPAddon.Startup.SpaceCentre, false)]
-	public class AI_TestWindow : MonoBehaviour
-	{
-		static Rect windowpos;
-		private static bool gui_enabled = false;
-		private static bool hide_ui;
-
-		static AI_TestWindow instance;
-
-		public static void ToggleGUI ()
-		{
-			gui_enabled = !gui_enabled;
-			if (instance != null) {
-				instance.UpdateGUIState ();
-			}
-		}
-
-		public static void HideGUI ()
-		{
-			gui_enabled = false;
-			if (instance != null) {
-				instance.UpdateGUIState ();
-			}
-		}
-
-		public static void ShowGUI ()
-		{
-			gui_enabled = true;
-			if (instance != null) {
-				instance.UpdateGUIState ();
-			}
-		}
-
-		void UpdateGUIState ()
-		{
-			enabled = !hide_ui && gui_enabled;
-		}
-
-		void onHideUI ()
-		{
-			hide_ui = true;
-			UpdateGUIState ();
-		}
-
-		void onShowUI ()
-		{
-			hide_ui = false;
-			UpdateGUIState ();
-		}
-
-		public void Awake ()
-		{
-			instance = this;
-			GameEvents.onHideUI.Add (onHideUI);
-			GameEvents.onShowUI.Add (onShowUI);
-		}
-
-		void OnDestroy ()
-		{
-			instance = null;
-			GameEvents.onHideUI.Remove (onHideUI);
-			GameEvents.onShowUI.Remove (onShowUI);
-			InputLib.Close ();
-		}
-
-		InputLibWrapper.Device dev;
-		DeviceNamesContainer devNames;
-		int devidx;
-		
-		void Start ()
-		{
 			InputLib.Init ();
-			UpdateGUIState ();
 		}
 
-		void DumpAxes ()
+		void OnDestroy ()
 		{
-			GUILayout.BeginVertical ();
+			InputLib.Close ();
+			InputLibLoader.closelib ();
 
-			for (int i = 0; i < dev.num_axes; i++) {
-				GUILayout.BeginHorizontal ();
-				if (devNames != null) {
-					GUILayout.Label (devNames.AxisName (i));
-				} else {
-					GUILayout.Label (i.ToString());
-				}
-				GUILayout.FlexibleSpace ();
-				GUILayout.Label (dev.axes[i].value.ToString());
-				GUILayout.EndHorizontal ();
-			}
-
-			GUILayout.EndVertical ();
-		}
-
-		void DumpButtons ()
-		{
-			GUILayout.BeginVertical ();
-
-			for (int i = 0; i < dev.num_buttons; i++) {
-				if (i > 0 && (i % 9) == 0) {
-					GUILayout.EndVertical ();
-					GUILayout.BeginVertical ();
-				}
-				GUILayout.BeginHorizontal ();
-				if (devNames != null) {
-					GUILayout.Label (devNames.ButtonName (i));
-				} else {
-					GUILayout.Label (i.ToString());
-				}
-				GUILayout.FlexibleSpace ();
-				GUILayout.Label (dev.buttons[i].state.ToString());
-				GUILayout.EndHorizontal ();
-			}
-
-			GUILayout.EndVertical ();
-		}
-
-		void WindowGUI (int windowID)
-		{
-			dev = InputLib.devices[devidx];
-			AI_Database.DeviceNames.TryGetValue (dev.name, out devNames);
-			InputLib.CheckInput ();
-			if (GUILayout.Button (dev.name)) {
-				if (++devidx >= InputLib.devices.Count) {
-					devidx = 0;
-				}
-			}
-			GUILayout.BeginHorizontal ();
-			DumpAxes ();
-			DumpButtons ();
-			GUILayout.EndHorizontal ();
-			GUI.DragWindow (new Rect (0, 0, 10000, 20));
-		}
-
-		void OnGUI ()
-		{
-			if (gui_enabled) { // don't create windows unless we're going to show them
-				GUI.skin = HighLogic.Skin;
-				if (windowpos.x == 0) {
-					windowpos = new Rect (Screen.width / 2 - 250,
-						Screen.height / 2 - 30, 0, 0);
-				}
-				string name = "Advanced Input";
-				string ver = AdvancedInputVersionReport.GetVersion ();
-				windowpos = GUILayout.Window (GetInstanceID (),
-					windowpos, WindowGUI,
-					name + " " + ver,
-					GUILayout.Width (500));
-				if (windowpos.Contains (new Vector2 (Input.mousePosition.x, Screen.height - Input.mousePosition.y))) {
-					InputLockManager.SetControlLock ("AI_test_window_lock");
-				} else {
-					InputLockManager.RemoveControlLock ("AI_test_window_lock");
-				}
-			} else {
-				InputLockManager.RemoveControlLock ("AI_test_window_lock");
-			}
+			instance = null;
 		}
 	}
 }

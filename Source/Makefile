@@ -54,10 +54,6 @@ MOD_FILES := \
 	ButtonBindings/TranslateUp.cs	\
 	ButtonBindings/WheelThrottleLock.cs	\
 	Linux/InputLib.cs			\
-	UI/ConfigWindow.cs			\
-	UI/ScrollView.cs			\
-	UI/Styles.cs				\
-	UI/TextField.cs				\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
 	AxisRecipe.cs				\
@@ -74,6 +70,8 @@ MOD_FILES := \
 	Toolbar.cs					\
 	Utils.cs					\
 	$e
+
+include KodeUI/KodeUI.inc
 
 DOC_FILES := \
 	License.txt \
@@ -120,15 +118,16 @@ KSP := \
 UNITY := \
 	-r:UnityEngine.dll \
 	-r:UnityEngine.UI.dll \
-	-r:UnityEngine.IMGUIModule.dll \
+	-r:UnityEngine.UIModule.dll \
 	-r:UnityEngine.CoreModule.dll \
 	-r:UnityEngine.TextRenderingModule.dll \
 	-r:UnityEngine.InputLegacyModule.dll \
 	-r:UnityEngine.AnimationModule.dll \
 	-r:UnityEngine.PhysicsModule.dll \
+	-r:UnityEngine.Physics2DModule.dll \
 	$e
 
-bin/${MODNAME}.dll: ${MOD_FILES}
+bin/${MODNAME}.dll: ${MOD_FILES} ${KodeUI}
 	@mkdir -p bin
 	${CSC} ${CSCFLAGS} ${SYSTEM} ${KSP} ${UNITY} \
 		-r:../Assets/0Harmony.1.2.0.1.dll \

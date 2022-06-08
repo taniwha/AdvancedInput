@@ -137,7 +137,6 @@ namespace AdvancedInput {
 			instance = null;
 			GameEvents.onVesselChange.Remove (OnVesselChange);
 			GameEvents.onInputLocksModified.Remove (OnInputLocksModified);
-			InputLib.Close ();
 			InputLib.DeviceAdded -= DeviceAdded;
 			InputLib.DeviceRemoved -= DeviceRemoved;
 			FlightInputHandler.OnRawAxisInput -= ControlUpdate;
@@ -148,7 +147,9 @@ namespace AdvancedInput {
 			Debug.LogFormat ("[AI_FlightControl] Start {0}", GetInstanceID ());
 			InputLib.DeviceAdded += DeviceAdded;
 			InputLib.DeviceRemoved += DeviceRemoved;
-			InputLib.Init ();
+			foreach (var rawdev in InputLib.devices) {
+				DeviceAdded (rawdev);
+			}
 			FlightInputHandler.OnRawAxisInput = ControlUpdate + FlightInputHandler.OnRawAxisInput;
 		}
 
@@ -249,104 +250,5 @@ namespace AdvancedInput {
 			}
 			return binding;
 		}
-/*
-		void DumpLine (string name, float value)
-		{
-			GUILayout.BeginHorizontal ();
-			GUILayout.Label (name);
-			GUILayout.FlexibleSpace ();
-			GUILayout.Label (value.ToString ("G3"));
-			GUILayout.EndHorizontal ();
-		}
-
-		void DumpLine (string name, int value)
-		{
-			GUILayout.BeginHorizontal ();
-			GUILayout.Label (name);
-			GUILayout.FlexibleSpace ();
-			GUILayout.Label (value.ToString ());
-			GUILayout.EndHorizontal ();
-		}
-
-		void DumpState (FlightCtrlState state)
-		{
-			GUILayout.BeginVertical (GUILayout.Width (180));
-			DumpLine ("mThrot", state.mainThrottle);
-			DumpLine ("roll", state.roll);
-			DumpLine ("yaw", state.yaw);
-			DumpLine ("pitch", state.pitch);
-			DumpLine ("wheelSteer", state.wheelSteer);
-			DumpLine ("wheelThrottle", state.wheelThrottle);
-			DumpLine ("X", state.X);
-			DumpLine ("Y", state.Y);
-			DumpLine ("Z", state.Z);
-			GUILayout.EndVertical ();
-		}
-
-		void DumpAxes (Device dev)
-		{
-			GUILayout.BeginVertical (GUILayout.Width (180));
-
-			for (int i = 0; i < dev.num_axes; i++) {
-				DumpLine (dev.AxisName (i), dev.AxisValue (i, false));
-			}
-
-			GUILayout.EndVertical ();
-		}
-
-		void DumpButtons (Device dev)
-		{
-			GUILayout.BeginVertical (GUILayout.Width (180));
-
-			for (int i = 0; i < dev.num_buttons; i++) {
-				if (i > 0 && (i % 20) == 0) {
-					GUILayout.EndVertical ();
-					GUILayout.BeginVertical (GUILayout.Width (180));
-				}
-				DumpLine (dev.ButtonName (i), dev.ButtonState (i));
-			}
-
-			GUILayout.EndVertical ();
-		}
-
-		int devidx;
-		static Rect windowpos;
-		void WindowGUI (int windowID)
-		{
-			if (devices.Count < 1) {
-				return;
-			}
-			Device dev = devices[devidx];
-			if (GUILayout.Button (dev.name)) {
-				if (++devidx >= devices.Count) {
-					devidx = 0;
-				}
-			}
-			GUILayout.BeginHorizontal ();
-			if (currentVessel != null) {
-				DumpState (currentVessel.ctrlState);
-			}
-			DumpState (ctrlState);
-			DumpAxes (dev);
-			DumpButtons (dev);
-			GUILayout.EndHorizontal ();
-			GUI.DragWindow (new Rect (0, 0, 10000, 20));
-		}
-
-		void OnGUI ()
-		{
-			GUI.skin = HighLogic.Skin;
-			if (windowpos.x == 0) {
-				windowpos = new Rect (Screen.width / 2 - 250,
-					Screen.height / 2 - 30, 0, 0);
-			}
-			string name = "Advanced Input";
-			string ver = AdvancedInputVersionReport.GetVersion ();
-			windowpos = GUILayout.Window (GetInstanceID (),
-				windowpos, WindowGUI,
-				name + " " + ver,
-				GUILayout.Width (500));
-		}
-*/
 	}
 }
