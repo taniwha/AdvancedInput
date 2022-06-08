@@ -148,7 +148,9 @@ namespace AdvancedInput {
 			InputLib.DeviceAdded += DeviceAdded;
 			InputLib.DeviceRemoved += DeviceRemoved;
 			foreach (var rawdev in InputLib.devices) {
-				DeviceAdded (rawdev);
+				if (rawdev != null) {
+					DeviceAdded (rawdev);
+				}
 			}
 			FlightInputHandler.OnRawAxisInput = ControlUpdate + FlightInputHandler.OnRawAxisInput;
 		}
