@@ -46,23 +46,23 @@ namespace AdvancedInput {
 			if (ctrl.translation != Vector3.zero) {
 				var trans = new Vector2 (ctrl.translation.x, ctrl.translation.z).normalized;
 				if (__instance.CharacterFrameMode) {
-					___tgtRpos = transform.forward * trans.y;
+					___tgtRpos += transform.forward * trans.y;
 					___tgtRpos += transform.right * trans.x;
 				} else {
-					___tgtRpos = __instance.fFwd * trans.y;
+					___tgtRpos += __instance.fFwd * trans.y;
 					___tgtRpos += __instance.fRgt * trans.x;
 				}
 
-				___ladderTgtRPos = transform.up * ctrl.translation.z;
+				___ladderTgtRPos += transform.up * ctrl.translation.z;
 				___ladderTgtRPos += transform.right * ctrl.translation.x;
 
-				___packTgtRPos = transform.right * ctrl.translation.x;
+				___packTgtRPos += transform.right * ctrl.translation.x;
 				___packTgtRPos += transform.up * ctrl.translation.y;
 				___packTgtRPos += transform.forward * ctrl.translation.z;
 			}
 
 			if (ctrl.rotation != Vector3.zero) {
-				___cmdRot = -transform.right * ctrl.rotation.x;
+				___cmdRot -= transform.right * ctrl.rotation.x;
 				___cmdRot += transform.up * ctrl.rotation.y;
 				___cmdRot -= transform.forward * ctrl.rotation.z;
 				___manualAxisControl = true;
@@ -78,8 +78,8 @@ namespace AdvancedInput {
 			}
 
 			if (ctrl.parachute != Vector2.zero) {
-				___parachuteInput.x = ctrl.parachute.x;
-				___parachuteInput.y = ctrl.parachute.y;
+				___parachuteInput.x += ctrl.parachute.x;
+				___parachuteInput.y += ctrl.parachute.y;
 			}
 
 			if (vessel.LandedOrSplashed) {
