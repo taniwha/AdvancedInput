@@ -115,6 +115,7 @@ public class InputLib
 {
 	static bool initialized;
 
+	private static List<int> freeDeviceIds;
 	public static List<Device> devices { get; private set; }
 	public delegate void Callback (Device dev);
 	public static Callback DeviceAdded = (Device dev) => { };
@@ -124,10 +125,20 @@ public class InputLib
 	{
 		try {
 			Device dev = new Device (devPtr);
-			devices.Add (dev);
+			int devId = devices.Count;
+			int freeCount = freeDeviceIds.Count;
+			if (freeCount > 0) {
+				devId = freeDeviceIds[freeCount - 1];
+				freeDeviceIds.RemoveAt (freeCount - 1);
+				devices[devId] = dev;
+			} else {
+				devices.Add (dev);
+			}
+			dev.id = devId;
 			DeviceAdded (dev);
+			Debug.Log ($"[InputLib] Added device {dev.id} {dev.name}");
 		} catch (Exception e) {
-			Debug.LogFormat ("Exception handling addDevice\n{0}", e);
+			Debug.Log ($"[InputLib] Exception handling addDevice\n{e}");
 			throw;
 		}
 	}
@@ -135,17 +146,16 @@ public class InputLib
 	static void removeDevice (IntPtr devPtr)
 	{
 		try {
-			string path = Device.DevicePath (devPtr);
-			for (int i = devices.Count; i-- > 0; ) {
-				Device dev = devices[i];
-				if (dev.path == path) {
-					devices.RemoveAt (i);
-					DeviceRemoved (dev);
-					dev.close_device ();
-				}
-			}
+			Debug.Log ($"[InputLib] Removing device ptr {devPtr}");
+			int devId = Device.DeviceData (devPtr);
+			Debug.Log ($"[InputLib] Removing device {devId}");
+			Device dev = devices[devId];
+			devices[devId] = null;
+			freeDeviceIds.Add (devId);
+			DeviceRemoved (dev);
+			dev.close_device ();
 		} catch (Exception e) {
-			Debug.LogFormat ("Exception handling removeDevice\n{0}", e);
+			Debug.Log ($"Exception handling removeDevice\n{e}");
 			throw;
 		}
 	}
@@ -155,6 +165,7 @@ public class InputLib
 
 	public static bool Init ()
 	{
+		freeDeviceIds = new List<int> ();
 		devices = new List<Device> ();
 		addDev = addDevice;
 		remDev = removeDevice;
@@ -197,6 +208,16 @@ public class Device {
 
 	private IntPtr self;
 
+	public int id
+	{
+		get {
+			return DeviceData (self);
+		}
+		internal set {
+			SetDeviceData (self, value);
+		}
+	}
+
 	private GCHandle buttons_handle, axes_handle;
 
 	internal static string DevicePath (IntPtr devptr)
@@ -204,6 +225,22 @@ public class Device {
 		unsafe {
 			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
 			return Marshal.PtrToStringAnsi(dev->path);
+		}
+	}
+
+	internal static int DeviceData (IntPtr devptr)
+	{
+		unsafe {
+			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
+			return (int) dev->data.ToInt64 ();
+		}
+	}
+
+	internal static void SetDeviceData (IntPtr devptr, int data)
+	{
+		unsafe {
+			WrappedDevice *dev = (WrappedDevice *) devptr.ToPointer ();
+			dev->data = new IntPtr (data);
 		}
 	}
 
@@ -223,7 +260,7 @@ public class Device {
 			int bsize = Marshal.SizeOf (typeof(Button));
 			if (dev->num_buttons > 0) {
 				for (int i = 0; i < dev->num_buttons; i++) {
-					IntPtr bptr = new IntPtr(dev->buttons.ToInt64() + i * bsize);
+					IntPtr bptr = new IntPtr(dev->buttons.ToInt64 () + i * bsize);
 					buttons[i] = (Button) Marshal.PtrToStructure (bptr, typeof(Button));
 				}
 				buttons_handle = GCHandle.Alloc(buttons, GCHandleType.Pinned);
@@ -233,7 +270,7 @@ public class Device {
 			int asize = Marshal.SizeOf (typeof(Axis));
 			if (dev->num_axes > 0) {
 				for (int i = 0; i < dev->num_axes; i++) {
-					IntPtr aptr = new IntPtr (dev->axes.ToInt64() + i * asize);
+					IntPtr aptr = new IntPtr (dev->axes.ToInt64 () + i * asize);
 					axes[i] = (Axis) Marshal.PtrToStructure (aptr, typeof(Axis));
 				}
 				axes_handle = GCHandle.Alloc(axes, GCHandleType.Pinned);
