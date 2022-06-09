@@ -54,7 +54,11 @@ MOD_FILES := \
 	ButtonBindings/TranslateUp.cs	\
 	ButtonBindings/WheelThrottleLock.cs	\
 	Linux/InputLib.cs			\
+	UI/DeviceInfo.cs			\
+	UI/DeviceInfoView.cs		\
+	UI/DeviceManagerView.cs		\
 	UI/SettingsWindow.cs		\
+	UI/WindowManager.cs			\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
 	AxisRecipe.cs				\

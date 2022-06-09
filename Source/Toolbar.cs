@@ -24,7 +24,7 @@ namespace AdvancedInput {
 	[KSPAddon(KSPAddon.Startup.MainMenu, true)]
 	public class AI_AppButton : MonoBehaviour
 	{
-		const ApplicationLauncher.AppScenes buttonScenes = ApplicationLauncher.AppScenes.FLIGHT;
+		const ApplicationLauncher.AppScenes buttonScenes = ApplicationLauncher.AppScenes.FLIGHT | ApplicationLauncher.AppScenes.SPACECENTER;
 		private static ApplicationLauncherButton button = null;
 
 		public static Callback Toggle = delegate {};
@@ -49,9 +49,20 @@ namespace AdvancedInput {
 			Toggle();
 		}
 
+		static AI_AppButton instance;
+
+		void Awake ()
+		{
+			if (instance != null) {
+				DestroyImmediate (this);
+				return;
+			}
+			GameObject.DontDestroyOnLoad(this);
+			instance = this;
+		}
+
 		public void Start()
 		{
-			GameObject.DontDestroyOnLoad(this);
 			GameEvents.onGUIApplicationLauncherReady.Add(OnGUIAppLauncherReady);
 		}
 

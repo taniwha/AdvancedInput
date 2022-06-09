@@ -30,7 +30,7 @@ namespace AdvancedInput {
 		public static Dictionary<string, DeviceNamesContainer> DeviceNames { get; private set; }
 		public static Dictionary<string, ConfigNode> DeviceConfigs { get; private set; }
 
-		void LoadConfigFiles ()
+		public static void LoadConfigFiles ()
 		{
 			var di = new DirectoryInfo (DataPath);
 			var files = di.GetFiles ("*.cfg");
