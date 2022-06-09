@@ -54,6 +54,7 @@ MOD_FILES := \
 	ButtonBindings/TranslateUp.cs	\
 	ButtonBindings/WheelThrottleLock.cs	\
 	Linux/InputLib.cs			\
+	UI/SettingsWindow.cs		\
 	AdvancedInput.cs			\
 	AxisBinding.cs				\
 	AxisRecipe.cs				\
