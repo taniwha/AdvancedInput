@@ -75,6 +75,7 @@ static class ilw
 {
 	//[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 	public delegate void DevCallback (IntPtr dev);
+	public delegate void InpCallback (IntPtr inp, IntPtr data);
 
 	[DllImport ("libinputlib.so", CallingConvention = CallingConvention.Cdecl)]
 	public static extern int inputlib_init (DevCallback addDev, DevCallback remDev);
@@ -121,7 +122,52 @@ public class InputLib
 	public static Callback DeviceAdded = (Device dev) => { };
 	public static Callback DeviceRemoved = (Device dev) => { };
 
-	static void addDevice (IntPtr devPtr)
+	public delegate void AxisEventDelegate (in Axis axis, Device device);
+	public delegate void ButtonEventDelegate (in Button axis, Device device);
+	public static AxisEventDelegate AxisEvent;
+	public static ButtonEventDelegate ButtonEvent;
+
+	static void axis_event (IntPtr axisPtr, IntPtr data)
+	{
+		try {
+			var devId = (int) data.ToInt64 ();
+			Axis axis;
+			unsafe { axis = *(Axis *) axisPtr.ToPointer (); }
+			var dev = devices[devId];
+			if (dev.AxisEvent != null) {
+				dev.AxisEvent (in axis, dev);
+			}
+			if (AxisEvent != null) {
+				AxisEvent (in axis, dev);
+			}
+			//Debug.Log ($"[InputLib] axis event {devId} {dev.name} {axis.num} {axis.value}");
+		} catch (Exception e) {
+			Debug.Log ($"[InputLib] Exception handling AxisEvent\n{e}");
+			throw;
+		}
+	}
+
+	static void button_event (IntPtr buttonPtr, IntPtr data)
+	{
+		try {
+			var devId = (int) data.ToInt64 ();
+			Button button;
+			unsafe { button = *(Button *) buttonPtr.ToPointer (); }
+			var dev = devices[devId];
+			if (dev.ButtonEvent != null) {
+				dev.ButtonEvent (in button, dev);
+			}
+			if (ButtonEvent != null) {
+				ButtonEvent (in button, dev);
+			}
+			//Debug.Log ($"[InputLib] button event {devId} {dev.name} {button.num} {button.state}");
+		} catch (Exception e) {
+			Debug.Log ($"[InputLib] Exception handling ButtonEvent\n{e}");
+			throw;
+		}
+	}
+
+	static void AddDevice (IntPtr devPtr)
 	{
 		try {
 			Device dev = new Device (devPtr);
@@ -135,15 +181,17 @@ public class InputLib
 				devices.Add (dev);
 			}
 			dev.id = devId;
+			dev.axis_event = axis_event;
+			dev.button_event = button_event;
 			DeviceAdded (dev);
 			Debug.Log ($"[InputLib] Added device {dev.id} {dev.name}");
 		} catch (Exception e) {
-			Debug.Log ($"[InputLib] Exception handling addDevice\n{e}");
+			Debug.Log ($"[InputLib] Exception handling AddDevice\n{e}");
 			throw;
 		}
 	}
 
-	static void removeDevice (IntPtr devPtr)
+	static void RemoveDevice (IntPtr devPtr)
 	{
 		try {
 			Debug.Log ($"[InputLib] Removing device ptr {devPtr}");
@@ -155,21 +203,16 @@ public class InputLib
 			DeviceRemoved (dev);
 			dev.close_device ();
 		} catch (Exception e) {
-			Debug.Log ($"Exception handling removeDevice\n{e}");
+			Debug.Log ($"Exception handling RemoveDevice\n{e}");
 			throw;
 		}
 	}
-
-	static ilw.DevCallback addDev;
-	static ilw.DevCallback remDev;
 
 	public static bool Init ()
 	{
 		freeDeviceIds = new List<int> ();
 		devices = new List<Device> ();
-		addDev = addDevice;
-		remDev = removeDevice;
-		int res = ilw.inputlib_init (addDev, remDev);
+		int res = ilw.inputlib_init (AddDevice, RemoveDevice);
 		if (res < 0) {
 			//FIXME should throw an error?
 			return false;
@@ -200,6 +243,8 @@ public class InputLib
 public class Device {
 	public string path		{ get; private set; }
 	public string name		{ get; private set; }
+	public string phys		{ get; private set; }
+	public string uniq		{ get; private set; }
 	public int num_buttons	{ get; private set; }
 	public Button[] buttons { get; private set; }
 	public int num_axes		{ get; private set; }
@@ -208,6 +253,11 @@ public class Device {
 
 	private IntPtr self;
 
+	public delegate void AxisEventDelegate (in Axis axis, Device device);
+	public delegate void ButtonEventDelegate (in Button axis, Device device);
+	public AxisEventDelegate AxisEvent;
+	public ButtonEventDelegate ButtonEvent;
+
 	public int id
 	{
 		get {
@@ -215,6 +265,38 @@ public class Device {
 		}
 		internal set {
 			SetDeviceData (self, value);
+		}
+	}
+
+	internal ilw.InpCallback axis_event
+	{
+		get {
+			unsafe {
+				WrappedDevice *dev = (WrappedDevice *) self.ToPointer ();
+				return Marshal.GetDelegateForFunctionPointer<ilw.InpCallback> (dev->axis_event);
+			}
+		}
+		set {
+			unsafe {
+				WrappedDevice *dev = (WrappedDevice *) self.ToPointer ();
+				dev->axis_event = Marshal.GetFunctionPointerForDelegate<ilw.InpCallback> (value);
+			}
+		}
+	}
+
+	internal ilw.InpCallback button_event
+	{
+		get {
+			unsafe {
+				WrappedDevice *dev = (WrappedDevice *) self.ToPointer ();
+				return Marshal.GetDelegateForFunctionPointer<ilw.InpCallback> (dev->button_event);
+			}
+		}
+		set {
+			unsafe {
+				WrappedDevice *dev = (WrappedDevice *) self.ToPointer ();
+				dev->button_event = Marshal.GetFunctionPointerForDelegate<ilw.InpCallback> (value);
+			}
 		}
 	}
 
@@ -252,6 +334,8 @@ public class Device {
 
 			path = Marshal.PtrToStringAnsi(dev->path);
 			name = Marshal.PtrToStringAnsi(dev->name);
+			phys = Marshal.PtrToStringAnsi(dev->phys);
+			uniq = Marshal.PtrToStringAnsi(dev->uniq);
 			num_buttons = dev->num_buttons;
 			buttons = new Button[dev->num_buttons];
 			num_axes = dev->num_axes;
