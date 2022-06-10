@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Extraplanetary Launchpads.  If not, see
 <http://www.gnu.org/licenses/>.
 */
+using System;
 using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,11 +31,43 @@ namespace AdvancedInput {
 	public class AIDeviceInfo
 	{
 		public string name { get { return device.name; } }
+		public string phys { get { return device.phys; } }
+		public string uniq { get { return device.uniq; } }
 		public InputLibWrapper.Device device { get; private set; }
+		public bool active { get { return Time.time - eventTime < 1; } }
+
+		int[] axis_values;
+		float eventTime;
 
 		public AIDeviceInfo (InputLibWrapper.Device device)
 		{
 			this.device = device;
+			device.AxisEvent += AxisEvent;
+			device.ButtonEvent += ButtonEvent;
+			eventTime = Time.time;
+			axis_values = new int[device.num_axes];
+			for (int i = 0; i < device.num_axes; i++) {
+				axis_values[i] = device.axes[i].value;
+			}
+		}
+
+		void AxisEvent (in Axis axis, InputLibWrapper.Device dev)
+		{
+			if (Math.Abs (axis.value - axis_values[axis.num]) > Math.Abs (axis.max - axis.min) / 16) {
+				axis_values[axis.num] = axis.value;
+				eventTime = Time.time;
+			}
+		}
+
+		void ButtonEvent (in Button button, InputLibWrapper.Device dev)
+		{
+			eventTime = Time.time;
+		}
+
+		void Unhook ()
+		{
+			device.AxisEvent -= AxisEvent;
+			device.ButtonEvent -= ButtonEvent;
 		}
 
 		public class List : List<AIDeviceInfo>, UIKit.IListObject
@@ -77,6 +110,14 @@ namespace AdvancedInput {
 					var view = child.GetComponent<AIDeviceInfoView> ();
 					view.Select ();
 				}
+			}
+
+			public new void Clear ()
+			{
+				for (int i = 0; i < Count; i++) {
+					this[i].Unhook ();
+				}
+				base.Clear ();
 			}
 		}
 	}

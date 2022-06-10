@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with Extraplanetary Launchpads.  If not, see
 <http://www.gnu.org/licenses/>.
 */
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
@@ -31,11 +32,13 @@ namespace AdvancedInput {
 	{
 		AIDeviceInfo device;
 		new UIText name;
+		UIText uniq_or_phys;
 
 		public class AIDeviceInfoViewEvent : UnityEvent<AIDeviceInfo> { }
 		AIDeviceInfoViewEvent onSelected;
 
 		Toggle toggle;
+		MiniToggle activeIndicator;
 
 		public override void CreateUI()
 		{
@@ -56,6 +59,11 @@ namespace AdvancedInput {
 				.ControlChildSize (true, true)
 				.ChildForceExpand (false, false)
 				.Padding (3)
+				.FlexibleLayout (true, false)
+				.Add<MiniToggle> (out activeIndicator)
+					.PreferredSize (22, -1)
+					.FlexibleLayout (false, true)
+					.Finish ()
 				.Add<Layout> ()
 					.Vertical ()
 					.ControlChildSize (true, true)
@@ -64,6 +72,16 @@ namespace AdvancedInput {
 						.Alignment (TextAlignmentOptions.Left)
 						.Size (18)
 						//.PreferredSize (234, -1)
+						.Finish ()
+					.Add<Layout> ()
+						.Horizontal ()
+						.ControlChildSize (true, true)
+						.ChildForceExpand (false, false)
+						.Add<UIText> (out uniq_or_phys)
+							.Alignment (TextAlignmentOptions.Left)
+							.Size (18)
+							//.PreferredSize (234, -1)
+							.Finish ()
 						.Finish ()
 					.Finish ()
 				;
@@ -95,10 +113,20 @@ namespace AdvancedInput {
 			return this;
 		}
 
+		void Update ()
+		{
+			activeIndicator.SetIsOnWithoutNotify (device.active);
+		}
+
 		public AIDeviceInfoView Device (AIDeviceInfo device)
 		{
 			this.device = device;
 			name.Text (device.name);
+			if (!String.IsNullOrEmpty (device.uniq)) {
+				uniq_or_phys.Text (device.uniq);
+			} else {
+				uniq_or_phys.Text (device.phys);
+			}
 			return this;
 		}
 #region OnPointerEnter/Exit

@@ -57,6 +57,7 @@ MOD_FILES := \
 	UI/DeviceInfo.cs			\
 	UI/DeviceInfoView.cs		\
 	UI/DeviceManagerView.cs		\
+	UI/MiniToggle.cs			\
 	UI/SettingsWindow.cs		\
 	UI/WindowManager.cs			\
 	AdvancedInput.cs			\

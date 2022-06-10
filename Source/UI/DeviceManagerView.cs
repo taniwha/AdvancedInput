@@ -84,6 +84,8 @@ namespace AdvancedInput {
 			deviceInfos = new AIDeviceInfo.List (devicesGroup);
 			deviceInfos.Content = devicesView.Content;
 			deviceInfos.onSelected = OnSelected;
+
+			RebuildDevices ();
 		}
 
 		void OnSelected (AIDeviceInfo dev)
@@ -128,18 +130,27 @@ namespace AdvancedInput {
 			}
 		}
 
+		protected override void OnEnable ()
+		{
+			base.OnEnable ();
+			if (deviceInfos != null) {
+				RebuildDevices ();
+			}
+			InputLib.DeviceAdded += DeviceAdded;
+			InputLib.DeviceRemoved += DeviceRemoved;
+		}
+
+		protected override void OnDisable ()
+		{
+			base.OnDisable ();
+			InputLib.DeviceAdded -= DeviceAdded;
+			InputLib.DeviceRemoved -= DeviceRemoved;
+		}
+
 		public string TabName { get { return "Devices"; } }
 		public bool TabEnabled { get { return true; } }
 		public void SetTabVisible(bool visible)
 		{
-			if (visible) {
-				RebuildDevices ();
-				InputLib.DeviceAdded += DeviceAdded;
-				InputLib.DeviceRemoved += DeviceRemoved;
-			} else {
-				InputLib.DeviceAdded -= DeviceAdded;
-				InputLib.DeviceRemoved -= DeviceRemoved;
-			}
 			SetActive (visible);
 		}
 	}
