@@ -13,6 +13,7 @@ TAR			:= tar
 ZIP			:= zip
 
 DATA := \
+	3Dconnexion_SpaceNavigator.cfg \
 	deviceconfig.cfg \
 	saitek_x52.cfg \
 	thrustmaster_t16000m.cfg \

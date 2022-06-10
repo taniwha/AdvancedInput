@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 using KodeUI;
 
@@ -34,20 +35,31 @@ namespace AdvancedInput {
 		}
 
 		ScrollView devicesView;
+		ScrollView axisView;
+		ScrollView buttonView;
 
+		UIText shortName;
+
+		AIAxisInfo.List axisInfos;
+		AIButtonInfo.List buttonInfos;
 		AIDeviceInfo.List deviceInfos;
+
+		InputLibWrapper.Device selectedDevice;
 
 		public override void CreateUI ()
 		{
 			base.CreateUI ();
 
-			UIScrollbar scrollbar;
+			UIScrollbar devicesScrollbar;
+			UIScrollbar axisScrollbar;
+			UIScrollbar buttonScrollbar;
+
 			this.Vertical ()
 				.ControlChildSize (true, true)
 				.ChildForceExpand (false, false)
 
 				.Add<LayoutPanel> ()
-					.Vertical ()
+					.Horizontal ()
 					.Padding (8)
 					.Anchor (AnchorPresets.HorStretchTop)
 					.FlexibleLayout (true,true)
@@ -59,17 +71,48 @@ namespace AdvancedInput {
 						.Horizontal ()
 						.ControlChildSize (true, true)
 						.ChildForceExpand (false, true)
-						.Add<UIScrollbar> (out scrollbar, "Scrollbar")
+						.MinSize (400, -1)
+						.Add<UIScrollbar> (out devicesScrollbar, "Scrollbar")
 							.Direction (Scrollbar.Direction.BottomToTop)
 							.PreferredWidth (15)
 							.Finish()
+						.Finish ()
+					.Add<VerticalLayout> ()
+						.Add<UIText> (out shortName)
+							.Size (15)
+							.Alignment (TextAlignmentOptions.Left)
+							.Finish ()
+						.Add<HorizontalLayout> ()
+							.Add<ScrollView> (out axisView)
+								.Horizontal (false)
+								.Vertical (true)
+								.Horizontal ()
+								.ControlChildSize (true, true)
+								.ChildForceExpand (false, true)
+								.Add<UIScrollbar> (out axisScrollbar, "Scrollbar")
+									.Direction (Scrollbar.Direction.BottomToTop)
+									.PreferredWidth (15)
+									.Finish()
+								.Finish ()
+							.Add<ScrollView> (out buttonView)
+								.Horizontal (false)
+								.Vertical (true)
+								.Horizontal ()
+								.ControlChildSize (true, true)
+								.ChildForceExpand (false, true)
+								.Add<UIScrollbar> (out buttonScrollbar, "Scrollbar")
+									.Direction (Scrollbar.Direction.BottomToTop)
+									.PreferredWidth (15)
+									.Finish()
+								.Finish ()
+							.Finish ()
 						.Finish ()
 
 					.Finish ()
 
 				.Finish ();
 
-			devicesView.VerticalScrollbar = scrollbar;
+			devicesView.VerticalScrollbar = devicesScrollbar;
 			devicesView.Viewport.FlexibleLayout (true, true);
 			ToggleGroup devicesGroup;
 			devicesView.Content
@@ -83,13 +126,51 @@ namespace AdvancedInput {
 				.Finish ();
 			deviceInfos = new AIDeviceInfo.List (devicesGroup);
 			deviceInfos.Content = devicesView.Content;
-			deviceInfos.onSelected = OnSelected;
+			deviceInfos.onSelected = OnDeviceSelected;
+
+			axisView.VerticalScrollbar = axisScrollbar;
+			axisView.Viewport.FlexibleLayout (true, true);
+			ToggleGroup axisGroup;
+			axisView.Content
+				.Vertical ()
+				.ControlChildSize (true, true)
+				.ChildForceExpand (false, false)
+				.Anchor (AnchorPresets.HorStretchTop)
+				.PreferredSizeFitter (true, false)
+				.WidthDelta (0)
+				.ToggleGroup (out axisGroup)
+				.Finish ();
+			axisInfos = new AIAxisInfo.List (axisGroup);
+			axisInfos.Content = axisView.Content;
+
+			buttonView.VerticalScrollbar = buttonScrollbar;
+			buttonView.Viewport.FlexibleLayout (true, true);
+			ToggleGroup buttonGroup;
+			buttonView.Content
+				.Vertical ()
+				.ControlChildSize (true, true)
+				.ChildForceExpand (false, false)
+				.Anchor (AnchorPresets.HorStretchTop)
+				.PreferredSizeFitter (true, false)
+				.WidthDelta (0)
+				.ToggleGroup (out buttonGroup)
+				.Finish ();
+			buttonInfos = new AIButtonInfo.List (buttonGroup);
+			buttonInfos.Content = buttonView.Content;
 
 			RebuildDevices ();
 		}
 
-		void OnSelected (AIDeviceInfo dev)
+		void OnDeviceSelected (AIDeviceInfo dev)
 		{
+			if (selectedDevice != null) {
+				selectedDevice.AxisEvent -= axisInfos.AxisEvent;
+				selectedDevice.ButtonEvent -= buttonInfos.ButtonEvent;
+			}
+			selectedDevice = dev.device;
+			selectedDevice.AxisEvent += axisInfos.AxisEvent;
+			selectedDevice.ButtonEvent += buttonInfos.ButtonEvent;
+			RebuildInputs ();
 		}
 
 		void RebuildDevices ()
@@ -105,6 +186,27 @@ namespace AdvancedInput {
 			deviceInfos.Sort ((a, b) => a.name.CompareTo (b.name));
 			UIKit.UpdateListContent (deviceInfos);
 			deviceInfos.Select (0);
+		}
+
+		void RebuildInputs ()
+		{
+			DeviceNamesContainer devNames;
+			AI_Database.DeviceNames.TryGetValue (selectedDevice.name, out devNames);
+			if (devNames != null) {
+				shortName.Text (devNames.shortName);
+			} else {
+				shortName.Text (selectedDevice.name);
+			}
+			axisInfos.Clear ();
+			for (int i = 0; i < selectedDevice.num_axes; i++) {
+				axisInfos.Add (new AIAxisInfo (selectedDevice.axes[i], devNames));
+			}
+			UIKit.UpdateListContent (axisInfos);
+			buttonInfos.Clear ();
+			for (int i = 0; i < selectedDevice.num_buttons; i++) {
+				buttonInfos.Add (new AIButtonInfo (i, devNames));
+			}
+			UIKit.UpdateListContent (buttonInfos);
 		}
 
 		void DeviceAdded (InputLibWrapper.Device dev)

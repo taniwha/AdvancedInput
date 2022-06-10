@@ -28,14 +28,13 @@ using KodeUI;
 namespace AdvancedInput {
 	using InputLibWrapper;
 
-	public class AIDeviceInfoView : LayoutPanel, IPointerEnterHandler, IPointerExitHandler
+	public class AIButtonInfoView : LayoutPanel, IPointerEnterHandler, IPointerExitHandler
 	{
-		AIDeviceInfo device;
+		AIButtonInfo button;
 		new UIText name;
-		UIText uniq_or_phys;
 
-		public class AIDeviceInfoViewEvent : UnityEvent<AIDeviceInfo> { }
-		AIDeviceInfoViewEvent onSelected;
+		public class AIButtonInfoViewEvent : UnityEvent<AIButtonInfo> { }
+		AIButtonInfoViewEvent onSelected;
 
 		Toggle toggle;
 		MiniToggle activeIndicator;
@@ -44,7 +43,7 @@ namespace AdvancedInput {
 		{
 			base.CreateUI ();
 
-			onSelected = new AIDeviceInfoViewEvent ();
+			onSelected = new AIButtonInfoViewEvent ();
 
 			toggle = gameObject.AddComponent<Toggle> ();
 			toggle.targetGraphic = BackGround;
@@ -64,16 +63,9 @@ namespace AdvancedInput {
 					.PreferredSize (22, -1)
 					.FlexibleLayout (false, true)
 					.Finish ()
-				.Add<VerticalLayout> ()
-					.FlexibleLayout (true, true)
-					.Add<UIText> (out name)
-						.Alignment (TextAlignmentOptions.Left)
-						.Size (18)
-						.Finish ()
-					.Add<UIText> (out uniq_or_phys)
-						.Alignment (TextAlignmentOptions.Left)
-						.Size (18)
-						.Finish ()
+				.Add<UIText> (out name)
+					.Alignment (TextAlignmentOptions.Left)
+					.Size (18)
 					.Finish ()
 				;
 			//
@@ -82,42 +74,37 @@ namespace AdvancedInput {
 		void onValueChanged (bool on)
 		{
 			if (on) {
-				onSelected.Invoke (device);
+				//onSelected.Invoke (button);
 			}
 		}
 
-		public AIDeviceInfoView Group (ToggleGroup group)
+		public AIButtonInfoView Group (ToggleGroup group)
 		{
 			toggle.group = group;
 			return this;
 		}
 
-		public AIDeviceInfoView OnSelected (UnityAction<AIDeviceInfo> action)
+		public AIButtonInfoView OnSelected (UnityAction<AIButtonInfo> action)
 		{
 			onSelected.AddListener (action);
 			return this;
 		}
 
-		public AIDeviceInfoView Select ()
+		public AIButtonInfoView Select ()
 		{
 			toggle.isOn = true;
 			return this;
 		}
 
-		void Update ()
+		public void SetState (bool pressed)
 		{
-			activeIndicator.SetIsOnWithoutNotify (device.active);
+			activeIndicator.SetIsOnWithoutNotify (pressed);
 		}
 
-		public AIDeviceInfoView Device (AIDeviceInfo device)
+		public AIButtonInfoView Button (AIButtonInfo button)
 		{
-			this.device = device;
-			name.Text (device.name);
-			if (!String.IsNullOrEmpty (device.uniq)) {
-				uniq_or_phys.Text (device.uniq);
-			} else {
-				uniq_or_phys.Text (device.phys);
-			}
+			this.button = button;
+			name.Text (button.name);
 			return this;
 		}
 #region OnPointerEnter/Exit
